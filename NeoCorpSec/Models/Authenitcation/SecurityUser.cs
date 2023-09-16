@@ -20,10 +20,8 @@ namespace NeoCorpSec.Models.Authenitcation
         [Required]
         public bool IsActive { get; set; }
 
-        [Required]
         public DateTime CreatedAt { get; set; }
 
-        [Required]
         public DateTime ModifiedAt { get; set; }
         public DateTime DeletedAt { get; set; }
 
