@@ -26,6 +26,6 @@ namespace NeoCorpSec.Models.ShiftManagement
         [Required]
         public int ToursCompleted { get; set; }
 
-        public List<ShiftNote> ShiftNotes { get; set; }
+        public virtual ICollection<ShiftNote> ShiftNotes { get; set; }
     }
 }

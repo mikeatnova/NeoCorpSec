@@ -11,11 +11,9 @@ namespace NeoCorpSec.Models.Authenitcation
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
 
-        [Required]
         [MaxLength(50)]
         public string FirstName { get; set; }
 
-        [Required]
         [MaxLength(50)]
         public string LastName { get; set; }
 
@@ -27,6 +25,7 @@ namespace NeoCorpSec.Models.Authenitcation
 
         [Required]
         public DateTime ModifiedAt { get; set; }
+        public DateTime DeletedAt { get; set; }
 
         public DateTime? HiredDate { get; set; }
 

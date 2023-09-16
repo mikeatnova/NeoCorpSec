@@ -1,4 +1,9 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using NeoCorpSec.Data;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<NeoCorpSecContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("NeoCorpSecContext") ?? throw new InvalidOperationException("Connection string 'NeoCorpSecContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

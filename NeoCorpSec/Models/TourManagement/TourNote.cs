@@ -12,6 +12,8 @@ namespace NeoCorpSec.Models.TourManagement
 
         [ForeignKey("Tour")]
         public int TourId { get; set; }
+        public virtual Tour Tour { get; set; }
+
 
         [Required]
         public string Note { get; set; }

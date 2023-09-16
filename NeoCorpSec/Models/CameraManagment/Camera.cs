@@ -26,5 +26,7 @@ namespace NeoCorpSec.Models.CameraManagment
 
         [Required]
         public DateTime ModifiedAt { get; set; }
+
+        public List<CameraLocation> CameraLocations { get; set; }
     }
 }
