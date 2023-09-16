@@ -13,6 +13,8 @@ namespace NeoCorpSec.Models.ShiftManagement
         [ForeignKey("Shift")]
         public int ShiftId { get; set; }
 
+        public virtual Shift Shift { get; set; }
+
         [Required]
         public string Note { get; set; }
 

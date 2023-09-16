@@ -26,6 +26,6 @@ namespace NeoCorpSec.Models.TourManagement
         [ForeignKey("Camera")]
         public int CameraId { get; set; }
 
-        public List<TourNote> TourNotes { get; set; }
+        public virtual ICollection<TourNote> TourNotes { get; set; }
     }
 }

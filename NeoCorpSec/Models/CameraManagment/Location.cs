@@ -22,6 +22,6 @@ namespace NeoCorpSec.Models.CameraManagment
         [MaxLength(20)]
         public string State { get; set; }
 
-        public List<int> CamerasIds { get; set; }
+        public List<CameraLocation> CameraLocations { get; set; }
     }
 }
