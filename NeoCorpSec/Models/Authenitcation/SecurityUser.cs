@@ -12,10 +12,10 @@ namespace NeoCorpSec.Models.Authenitcation
         public int ID { get; set; }
 
         [MaxLength(50)]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [MaxLength(50)]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [Required]
         public bool IsActive { get; set; }
@@ -31,7 +31,7 @@ namespace NeoCorpSec.Models.Authenitcation
 
         // Navigation property for 1-to-1 relationship with IdentityUser
         [ForeignKey("IdentityUser")]
-        public string IdentityUserId { get; set; }
+        public string? IdentityUserId { get; set; }
 
         public IdentityUser IdentityUser { get; set; }
     }
