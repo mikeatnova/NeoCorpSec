@@ -18,7 +18,7 @@ namespace NeoCorpSec.Models.Archiving
 
         [ForeignKey("Tour")]
         public int TourId { get; set; }
-
+        [Required]
         public DateTime RetentionDate { get; set; }
     }
 }

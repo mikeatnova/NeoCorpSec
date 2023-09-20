@@ -1,0 +1,33 @@
+﻿/* Button Lengths */
+.btn-short {
+    border-radius: 5px;
+    font-size: 14px;
+    width: 25%; /* Adjust as needed */
+}
+
+.btn-medium {
+    border-radius: 5px;
+    font-size: 16px;
+    width: 50%; /* Adjust as needed */
+}
+
+.btn-full {
+    border-radius: 5px;
+    font-size: 18px;
+    width: 100%; /* Takes the full width of the parent container */
+}
+
+
+/* Action Button */
+.action-button {
+    border-radius: 5px;
+    background-color: #9ED154;
+    color: #000000;
+    border: none;
+    transition: 0.3s ease;
+}
+
+    .action-button:hover {
+        background-color: #86ba48; /* Slightly darker shade of the action color */
+        cursor: pointer;
+    }

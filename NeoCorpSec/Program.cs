@@ -1,12 +1,75 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using NeoCorpSec.Data;
+using Microsoft.IdentityModel.Tokens;
+using NeoCorpSec.Middleware;
+using NeoCorpSec.Services;
+using System.Text;
+
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<NeoCorpSecContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("NeoCorpSecContext") ?? throw new InvalidOperationException("Connection string 'NeoCorpSecContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSession();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<JwtExtractorHelper>();
+
+
+builder.Services.AddHttpClient("apiClient", client =>
+{
+    string? baseAddress = builder.Configuration["NeoNovaApiBaseUrl"];
+    if (baseAddress != null)
+    {
+        client.BaseAddress = new Uri(baseAddress);
+    }
+    else
+    {
+        // Handle the case where the base address is not configured
+        // log a warning or throw an exception
+    }
+});
+
+// Get JWT settings from configuration
+var jwtSettings = builder.Configuration.GetSection("Jwt");
+
+// Ensure JWT Key is not null
+var jwtKey = jwtSettings["Key"] ?? throw new InvalidOperationException("JWT Key is not configured.");
+
+builder.Services.AddAuthentication(options =>
+{
+options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            context.Token = context.Request.Cookies["NeoWebAppCookie"];
+            return Task.CompletedTask;
+        }
+    };
+}).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+    options.LoginPath = "/Account/LoginPage";
+});
+
+builder.Services.AddAuthorization(options =>
+{
+
+});
 
 var app = builder.Build();
 
@@ -23,10 +86,15 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<JwtClaimsMiddleware>();
+
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=SecurityUser}/{action=Login}/{id?}");
 
 app.Run();

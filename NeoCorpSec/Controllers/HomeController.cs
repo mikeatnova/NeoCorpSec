@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NeoCorpSec.Models;
 using System.Diagnostics;
 
 namespace NeoCorpSec.Controllers
 {
-    public class HomeController : Controller
+    [Authorize(Roles = "Neo, SecurityChief, SecurityManager, SecuritySupervisor, SecurityOfficer")]
+    public class HomeController : CoreController
     {
         private readonly ILogger<HomeController> _logger;
 
@@ -18,6 +20,31 @@ namespace NeoCorpSec.Controllers
             return View();
         }
 
+        public IActionResult TourPage()
+        {
+            return View();
+        }
+
+        public IActionResult CameraList()
+        {
+            return View();
+        }
+
+        public IActionResult Reports()
+        {
+            return View();
+        }
+
+        public IActionResult CameraHistory()
+        {
+            return View();
+        }
+
+        public IActionResult Admin()
+        {
+            return View();
+        }
+        [AllowAnonymous]
         public IActionResult Privacy()
         {
             return View();
