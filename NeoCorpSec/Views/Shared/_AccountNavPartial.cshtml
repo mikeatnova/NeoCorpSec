@@ -1,0 +1,34 @@
+﻿@{
+    var currentController = ViewContext.RouteData.Values["controller"].ToString();
+    var currentAction = ViewContext.RouteData.Values["action"].ToString();
+    var isLoginPage = currentController == "SecurityUser" && currentAction == "Login";
+    var isProfilePage = currentController == "SecurityUser" && currentAction == "Profile";
+}
+
+@if (ViewBag.IsUserAuthenticated != null && (bool)ViewBag.IsUserAuthenticated)
+{
+    <div class="login-partial-container">
+        @if (!isProfilePage)
+        {
+            <div class="account-button-wrapper">
+                <a class="btn btn-link account-button" asp-controller="SecurityUser" asp-action="Profile">
+                    <i class="fas fa-user"></i><span class="username-space">@ViewBag.Username</span>
+                </a>
+            </div>
+        }
+
+        @if (isProfilePage)
+        {
+            <div class="logout-button-wrapper">
+                <a class="btn btn-link logout-button" asp-controller="SecurityUser" asp-action="Logout">
+                    <span class="username-space">Logout</span><i class="fas fa-sign-out-alt"></i>
+                </a>
+            </div>
+        }
+    </div>
+}
+
+else if (!isLoginPage)
+{
+    <a class="btn btn-link" asp-controller="SecurityUser" asp-action="Login">Login</a>
+}
