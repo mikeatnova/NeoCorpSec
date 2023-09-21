@@ -17,15 +17,16 @@ namespace NeoCorpSec.Models.CameraManagment
         [ForeignKey("Location")]
         public int LocationId { get; set; }
 
+        [MaxLength(256)]
+        public string? Notes { get; set; }
+
         [Required]
         [MaxLength(20)]
         public string CurrentStatus { get; set; }
 
-        [Required]
-        public DateTime CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
-        [Required]
-        public DateTime ModifiedAt { get; set; }
+        public DateTime? ModifiedAt { get; set; }
 
         public List<CameraLocation> CameraLocations { get; set; }
     }
