@@ -22,11 +22,18 @@
     <Folder Include="Areas\Admin\Controllers\" />
     <Folder Include="Areas\Admin\Views\" />
     <Folder Include="Utils\" />
-    <Folder Include="Views\Camera\" />
     <Folder Include="Views\ChatLog\" />
     <Folder Include="Views\Report\" />
     <Folder Include="Views\Tour\" />
     <Folder Include="Views\Shift\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\Camera\_CameraPartial.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\Camera\_CameraPartial.cshtml" />
   </ItemGroup>
 
 </Project>
