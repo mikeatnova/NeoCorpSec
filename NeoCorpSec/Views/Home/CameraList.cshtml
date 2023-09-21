@@ -2,6 +2,22 @@
     ViewData["Title"] = "Camera List Page";
 }
 
+@model List<NeoCorpSec.Models.CameraManagment.Camera>
+
 <div class="text-center">
     <h1 class="display-4">Camera List Page</h1>
+</div>
+
+<div class="camera-list">
+    @if (Model != null && Model.Count > 0)
+    {
+        foreach (var camera in Model)
+        {
+            @await Html.PartialAsync("~/Views/Camera/_CameraPartial.cshtml", camera)
+        }
+    }
+    else
+    {
+        <p>No cameras found.</p>
+    }
 </div>

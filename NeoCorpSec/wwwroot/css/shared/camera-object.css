@@ -1,0 +1,86 @@
+﻿.camera-object {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    background-color: midnightblue;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    padding: 7px;
+}
+
+.camera-list {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* To make sure each camera-object takes up the entire row */
+}
+
+.camera-item {
+    flex: 1;
+    display: flex; /* Add this to make it a flex container */
+    align-items: center;
+    justify-content: center
+}
+
+.camera-item.status {
+    justify-content: start;
+}
+
+.camera-item.notes {
+    justify-content: end;
+}
+
+.camera-item.location {
+    justify-content: end;
+    font-size: 14px;
+}
+
+.camera-item.name {
+    font-size: 21px;
+    justify-content: start;
+}
+
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    background-color: transparent;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: transparent;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.status-image {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    margin-right: 10px; /* Add space between image and dropdown */
+}
+
+.dropbtn {
+    background-color: transparent; /* Make button background transparent */
+    border: none; /* Remove default button styles */
+    color: white; /* Make the arrow white */
+    cursor: pointer; /* Indicates clickable */
+}
