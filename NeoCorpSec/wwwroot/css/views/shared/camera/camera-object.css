@@ -1,4 +1,4 @@
-﻿/* Generic styles */
+﻿/*
 .camera-object-details summary {
     list-style: none;
     cursor: pointer;
@@ -10,14 +10,13 @@
     }
 }
 
-/* Camera object styles */
 .camera-object {
     display: flex;
     flex-direction: column;
     background-color: #0D253F;
     border-radius: 3px;
     border: #265C66;
-    padding: 3px;
+    padding: 0 10px;
     color: #F2F2F2;
     margin: 1px;
     transition: transform 0.2s ease;
@@ -29,32 +28,30 @@
         transform: scale(1.01);
     }
 
-/* Camera row styles */
 .camera-row {
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-between;
     align-items: center;
 }
 
 
-/* Camera item variants */
 .camera-item {
     flex: 1;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: start;
 }
 
     .camera-item.status {
-        justify-content: start;
+        margin: auto;    
+
     }
 
-    .camera-item.name {
+    .name {
         font-size: 21px;
-        justify-content: start;
     }
 
-    .camera-item.location {
+    .location {
         font-size: 14px;
     }
 
@@ -62,7 +59,11 @@
         width: 100%;
         justify-content: start;
     }
-/* Dropdown styles */
+
+.non-issue-block {
+    display: flex;
+    justify-content: start;
+}
 .dropdown {
     position: relative;
     display: inline-block;
@@ -83,6 +84,7 @@
         padding: 12px 16px;
         text-decoration: none;
         display: block;
+        background-color: #0D253F;
     }
 
         .dropdown-content a:hover {
@@ -93,23 +95,22 @@
     display: block;
 }
 
-/* Button styles */
 .dropbtn {
     background-color: transparent;
     border: none;
     color: white;
     cursor: pointer;
 }
-
-/* Status Image */
 .status-image {
-    width: 18px;
-    height: 18px;
-    object-fit: contain;
-    margin-right: 10px;
+    width: 14px;
+    height: 14px;
 }
 
-/* Notes section */
+.issues-status {
+    width: 16px;
+    height: 16px;
+}
+
 .notes-section {
     display: flex;
     padding: 5px;
@@ -158,3 +159,133 @@
 textarea, input[type="submit"], .action-button {
     width: 100%;
 }
+
+
+*/
+
+
+/* General styling for the camera row */
+
+.camera-object {
+    display: flex;
+    flex-direction: column;
+    background-color: #0D253F;
+    border-radius: 3px;
+    border: #265C66;
+    padding: 0 10px 5px 10px;
+    color: #F2F2F2;
+    margin: 1px;
+    transition: transform 0.2s ease;
+}
+
+    .camera-object:hover {
+        border: 1px solid #007466;
+        background-color: #004445;
+        transform: scale(1.01);
+    }
+
+.camera-object-details summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+
+
+.camera-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* For the status block on the far left */
+.status {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem; /* You can adjust this */
+}
+
+.status-image {
+    width: 14px;
+    height: 14px;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    background-color: transparent;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: transparent;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        background-color: #0D253F;
+    }
+
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropbtn {
+    background-color: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+
+/* Middle non-status block */
+.non-status-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.name, .location, .last-modified {
+    flex-basis: 33%; /* Equal width */
+}
+
+/* For the last modified block on the far right */
+.last-modified {
+    text-align: right;
+}
+
+/* For notes section */
+.notes-row {
+    margin-top: 1rem;
+    background-color: black;
+    border-radius: 5px;
+    
+}
+
+.notes-section {
+    padding: 1rem;
+}
+
+.single-note {
+    background-color: #ffffff8d;
+    border-radius: 5px;
+    color: black;
+    padding: 5px 8px;
+    margin: 3px 0 1px 0;
+    border: 1px solid black;
+}
+
+    .single-note:hover {
+        background-color: white;
+    }

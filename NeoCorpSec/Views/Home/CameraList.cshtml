@@ -19,51 +19,95 @@
     {
         @foreach (var cameraGroup in cameraGroups) // O(N)
         {
-            <details>
+            <details class="camera-list-details">
                 <summary class="location-list-summery">
-                    <h4 class="location-list-header" style="display:inline;">
+                    <div>
+                        <h4 class="location-list-header" style="display:inline;">
+                            @{
+                                var locationId = cameraGroup.Key;
+                                if (locationMap.ContainsKey(locationId)) // O(1)
+                                {
+                                    var location = locationMap[locationId];
+                                    @:@location.City, @location.State
+                                }
+                                else
+                                {
+                                    @:Unknown Location
+                                }
+                            }
+                        </h4>
+                        <span class="camera-count">(@cameraGroup.Count())</span>
+                    </div>
+                    <span class="status-block">
                         @{
-                            var locationId = cameraGroup.Key;
-                            if (locationMap.ContainsKey(locationId)) // O(1)
+                            if (cameraStatusCounts.TryGetValue(locationId, out var statusCounts))
                             {
-                                var location = locationMap[locationId];
-                                @:@location.City, @location.State
-                            }
-                            else
-                            {
-                                @:Unknown Location
+                                int count = 0;
+
+                                if (statusCounts.TryGetValue("Up", out count))
+                                {
+                                    <span class="status-spacing status-container">
+                                        <img class="status-image up-status" src="/images/grncircle.png" alt="Up" />
+                                        <span class="status-count">@statusCounts["Up"]</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-spacing status-container">
+                                        <img class="status-image up-status" src="/images/grncircle.png" alt="Up" />
+                                        <span class="status-count">0</span>
+                                    </span>
+                                }
+
+                                if (statusCounts.TryGetValue("Down", out count))
+                                {
+                                    <span class="status-spacing status-container">
+                                        <img class="status-image down-status" src="/images/redcircle.png" alt="Down" />
+                                        <span class="status-count">@statusCounts["Down"]</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-spacing status-container">
+                                        <img class="status-image down-status" src="/images/redcircle.png" alt="Down" />
+                                        <span class="status-count">0</span>
+                                    </span>
+                                }
+
+                                if (statusCounts.TryGetValue("Issues", out count))
+                                {
+                                    <span class="status-spacing status-container">
+                                        <img class="status-image issues-status" src="/images/warntriangle.png" alt="Issues" />
+                                        <span class="status-count">@statusCounts["Issues"]</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-spacing status-container">
+                                        <img class="status-image issues-status" src="/images/warntriangle.png" alt="Issues" />
+                                        <span class="status-count">0</span>
+                                    </span>
+                                }
+
+                                if (statusCounts.TryGetValue("Unboxed", out count))
+                                {
+                                    <span class="status-spacing status-container">
+                                        <img class="status-image unboxed-status" src="/images/unboxed.png" alt="Unboxed" />
+                                        <span class="status-count">@statusCounts["Unboxed"]</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-spacing status-container">
+                                        <img class="status-image unboxed-status" src="/images/unboxed.png" alt="Unboxed" />
+                                        <span class="status-count">0</span>
+                                    </span>
+                                }
                             }
                         }
-                    </h4>
-                    <span class="camera-count">(@cameraGroup.Count())</span>
-                    @{
-                        if (cameraStatusCounts.ContainsKey(locationId))
-                        {
-                            var statusCounts = cameraStatusCounts[locationId];
-
-                            @if (statusCounts.ContainsKey("Up"))
-                            {
-                                    <img class="status-image up-status" src="/images/grncircle.png" alt="Up" />
-                                    <span class="status-count">@statusCounts["Up"]</span>
-                            }
-
-                            @if (statusCounts.ContainsKey("Down"))
-                            {
-                                <span class="middle-status">
-                                    <img class="status-image down-status" src="/images/redcircle.png" alt="Down" />
-                                    <span class="status-count">@statusCounts["Down"]</span>
-                                </span>
-                            }
-
-                            @if (statusCounts.ContainsKey("Issues"))
-                            {
-                                    <img class="status-image issues-status" src="/images/warntriangle.png" alt="Issues" />
-                                    <span class="status-count">@statusCounts["Issues"]</span>
-                            }
-                        }
-                    }
+                    </span>
                 </summary>
-                <div>
+                <div class="camera-partial">
                     @foreach (var camera in cameraGroup) // O(N)
                     {
                         @await Html.PartialAsync("~/Views/Camera/_CameraPartial.cshtml", camera)

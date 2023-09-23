@@ -1,29 +1,17 @@
-﻿@model NeoCorpSec.Models.CameraManagment.Camera
+﻿@using System.Text.RegularExpressions;
+@model NeoCorpSec.Models.CameraManagment.Camera
 
 @{
     var locationMap = ViewBag.LocationMap as Dictionary<int, NeoCorpSec.Models.CameraManagment.Location>;
 }
 
-@functions {
-    public string GetImageNameForStatus(string status)
-    {
-        switch (status)
-        {
-            case "Up": return "grncircle.png";
-            case "Down": return "redcircle.png";
-            case "Issues": return "warntriangle.png";
-            case "Decommissioned": return "greycircle.png";
-            case "Unboxed": return "unboxed.png";
-            default: return "-";
-        }
-    }
-}
 
 <!-- Camera Object -->
 <details class="camera-object-details camera-object">
     <summary class="notes-summery">
         <!-- Status, Camera Name, Location Row -->
         <div class="camera-row">
+            <!-- Status block-->
             <div class="camera-item status">
                 @if (Model.CurrentStatus == "default")
                 {
@@ -51,24 +39,47 @@
                     </div>
                 </div>
             </div>
-            <div class="camera-item name">
-                @Model.Name
-            </div>
-            <div class="camera-item location">
-                @{
-                    if (locationMap.ContainsKey(Model.LocationId))
-                    {
-                        var location = locationMap[Model.LocationId];
-                        @:@location.Name, @location.City, @location.State
+            <div class="camera-item non-status-block">
+                <!-- Camera Name block -->
+                <div class="name">
+                    @Model.Name
+                </div>
+
+                <!-- Camera Location block -->
+                <div class="location">
+                    @{
+                        if (locationMap.ContainsKey(Model.LocationId))
+                        {
+                            var location = locationMap[Model.LocationId];
+                            @:@location.Name, @location.City, @location.State
+                        }
+                        else
+                        {
+                            @:Unknown Location
+                        }
                     }
-                    else
-                    {
-                        @:Unknown Location
+                </div>
+
+                <!-- Last Modified block-->
+                <div class="last-modified">
+                    @{
+                        if (Model.ModifiedAt.HasValue)
+                        {
+                            string modifiedAtUTC = Model.ModifiedAt.Value.ToString("O"); // Round-trip format
+                            string modifiedAtEastern = ConvertToEasternTime(modifiedAtUTC);
+                            string formattedModifiedAt = ConvertNotesTimeToEastern("Last Modified: (" + modifiedAtUTC + ")");
+                            @: @formattedModifiedAt
+                        }
+                        else
+                        {
+                            @:Last Modified: N/A
+                        }
                     }
-                }
+                </div>
             </div>
         </div>
     </summary>
+
     <!-- Notes Row -->
     <div class="camera-row notes-row">
         <div class="camera-item notes">
@@ -111,3 +122,37 @@
         </div>
     </div>
 </details>
+
+
+@functions {
+    public string GetImageNameForStatus(string status)
+    {
+        switch (status)
+        {
+            case "Up": return "grncircle.png";
+            case "Down": return "redcircle.png";
+            case "Issues": return "warntriangle.png";
+            case "Decommissioned": return "greycircle.png";
+            case "Unboxed": return "unboxed.png";
+            default: return "-";
+        }
+    }
+
+    public static string ConvertNotesTimeToEastern(string notes)
+    {
+        Regex regex = new Regex(@"\(([^)]+)\)");
+        return regex.Replace(notes, m => "[" + ConvertToEasternTime(m.Groups[1].Value) + "]");
+    }
+
+    public static string ConvertToEasternTime(string dateTimeString)
+    {
+        DateTime utcDateTime;
+        if (DateTime.TryParse(dateTimeString, out utcDateTime))
+        {
+            TimeZoneInfo easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            DateTime easternTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, easternZone);
+            return easternTime.ToString("MM.dd.yyyy hh:mm:ss tt"); // Now in AM/PM format
+        }
+        return dateTimeString;
+    }
+}
