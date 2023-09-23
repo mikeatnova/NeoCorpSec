@@ -55,6 +55,19 @@ namespace NeoCorpSec.Controllers
         public async Task<IActionResult> CameraList()
         {
             string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+            Dictionary<int, Tuple<string, string>> locationMap = new Dictionary<int, Tuple<string, string>>()
+            {
+                {1, Tuple.Create("Attleboro", "Massachusetts")},
+                {2, Tuple.Create("Framingham", "Massachusetts")},
+                {3, Tuple.Create("Sheffield", "Massachusetts")},
+                {4, Tuple.Create("Dracut", "Massachusetts")},
+                {5, Tuple.Create("Pawtucket", "Rhode Island")},
+                {6, Tuple.Create("Central Falls", "Rhode Island")},
+                {7, Tuple.Create("Thorndike", "Maine")},
+                {8, Tuple.Create("Greenville Junction", "Maine")},
+                {9, Tuple.Create("Woodbury", "New Jersey")}
+            };
+            ViewBag.LocationMap = locationMap;
             using (var httpClient = InitializeHttpClient())
             {
                 // Fetch Cameras

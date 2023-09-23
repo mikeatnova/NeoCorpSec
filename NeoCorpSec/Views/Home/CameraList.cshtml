@@ -4,6 +4,11 @@
 
 @model List<NeoCorpSec.Models.CameraManagment.Camera>
 
+@{
+    var locationMap = ViewBag.LocationMap as Dictionary<int, NeoCorpSec.Models.CameraManagment.Location>;
+    var cameraGroups = Model.GroupBy(camera => camera.LocationId); // O(N)
+}
+
 <div class="text-center">
     <h1 class="display-4">Camera List Page</h1>
 </div>
@@ -11,9 +16,34 @@
 <div class="camera-list">
     @if (Model != null && Model.Count > 0)
     {
-        foreach (var camera in Model)
+        @foreach (var cameraGroup in cameraGroups) // O(N)
         {
-            @await Html.PartialAsync("~/Views/Camera/_CameraPartial.cshtml", camera)
+            <details>
+                <summary>
+                    <h4 style="display:inline;">
+                        @{
+                            var locationId = cameraGroup.Key;
+                            if (locationMap.ContainsKey(locationId)) // O(1)
+                            {
+                                var location = locationMap[locationId];
+                                @:@location.City, @location.State
+                            }
+                            else
+                            {
+                                @:Unknown Location
+                            }
+                        }
+                    </h4>
+                    <span>(@cameraGroup.Count())</span>
+                </summary>
+                <div>
+                    @foreach (var camera in cameraGroup) // O(N)
+                    {
+                        @await Html.PartialAsync("~/Views/Camera/_CameraPartial.cshtml", camera)
+                        // O(1)
+                    }
+                </div>
+            </details>
         }
     }
     else

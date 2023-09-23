@@ -19,54 +19,95 @@
     }
 }
 
-<div class="camera-object">
-    <div class="camera-item status">
-        @if (Model.CurrentStatus == "default")
-        {
-            @:-
-        }
-        else
-        {
-            <img class="status-image" src="@("/images/" + GetImageNameForStatus(Model.CurrentStatus))" alt="Status" id="status-img-@Model.ID">
-        }
-        <div class="dropdown">
-            <button class="dropbtn" id="dropbtn-@Model.ID">▼</button>
-            <div class="dropdown-content">
-                @foreach (var status in new string[] { "Up", "Issues", "Down", "Decommissioned", "Unboxed" })
+<!-- Camera Object -->
+<details class="camera-object-details camera-object">
+    <summary class="notes-summery">
+        <!-- Status, Camera Name, Location Row -->
+        <div class="camera-row">
+            <div class="camera-item status">
+                @if (Model.CurrentStatus == "default")
                 {
-                    <form method="post" asp-controller="Home" asp-action="PutCamera">
-                        <input type="hidden" name="ID" value="@Model.ID" />
-                        <input type="hidden" name="Name" value="@Model.Name" />
-                        <input type="hidden" name="LocationId" value="@Model.LocationId" />
-                        <input type="hidden" name="Notes" value="@Model.Notes" />
-                        <input type="hidden" name="CreatedAt" value="@Model.CreatedAt" />
-                        <input type="hidden" name="CurrentStatus" value="@status" />
-                        <input type="submit" value="@status" />
-                    </form>
+                    @:-
+                }
+                else
+                {
+                    <img class="status-image" src="@("/images/" + GetImageNameForStatus(Model.CurrentStatus))" alt="Status" id="status-img-@Model.ID">
+                }
+                <div class="dropdown">
+                    <button class="dropbtn" id="dropbtn-@Model.ID">▼</button>
+                    <div class="dropdown-content">
+                        @foreach (var status in new string[] { "Up", "Issues", "Down", "Decommissioned", "Unboxed" })
+                        {
+                            <form method="post" asp-controller="Home" asp-action="PutCamera">
+                                <input type="hidden" name="ID" value="@Model.ID" />
+                                <input type="hidden" name="Name" value="@Model.Name" />
+                                <input type="hidden" name="LocationId" value="@Model.LocationId" />
+                                <input type="hidden" name="Notes" value="@Model.Notes" />
+                                <input type="hidden" name="CreatedAt" value="@Model.CreatedAt" />
+                                <input type="hidden" name="CurrentStatus" value="@status" />
+                                <input type="submit" value="@status" />
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="camera-item name">
+                @Model.Name
+            </div>
+            <div class="camera-item location">
+                @{
+                    if (locationMap.ContainsKey(Model.LocationId))
+                    {
+                        var location = locationMap[Model.LocationId];
+                        @:@location.Name, @location.City, @location.State
+                    }
+                    else
+                    {
+                        @:Unknown Location
+                    }
                 }
             </div>
         </div>
+    </summary>
+    <!-- Notes Row -->
+    <div class="camera-row notes-row">
+        <div class="camera-item notes">
+            <div class="notes-section">
+                <p>Notes</p>
+                <div class="notes-form-section">
+                    <form method="post" asp-action="UpdateNotes" asp-controller="Camera">
+                        <div class="input-row">
+                            <input type="hidden" name="cameraId" value="@Model.ID" />
+                            <textarea name="newNote" placeholder="Add a note..."></textarea>
+                        </div>
+                        <div class="submit-row">
+                            <button class="action-button" type="submit">Submit Note</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="notes-list-section">
+                    @if (!string.IsNullOrEmpty(Model.Notes)) // O(1)
+                    {
+                        var noteArray = Model.Notes.Split(';'); // O(N)
+                        if (noteArray.Any()) // O(1)
+                        {
+                            foreach (var note in noteArray) // O(N)
+                            {
+                                <div class="single-note">@note</div>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-center">No notes available.</p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-center">No notes available.</p>
+                    }
+                </div>
+
+            </div>
+        </div>
     </div>
-    <div class="camera-item name">
-        @Model.Name
-    </div>
-    <div class="camera-item location">
-        @{
-            if (locationMap.ContainsKey(Model.LocationId))
-            {
-                var location = locationMap[Model.LocationId];
-                @:@location.Name, @location.City, @location.State
-            }
-            else
-            {
-                @:Unknown Location
-            }
-        }
-    </div>
-    <div class="camera-item notes">
-        <details>
-            <summary>Notes</summary>
-            <p>@Model.Notes</p>
-        </details>
-    </div>
-</div>
+</details>

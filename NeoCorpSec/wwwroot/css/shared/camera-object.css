@@ -1,46 +1,68 @@
-﻿.camera-object {
+﻿/* Generic styles */
+.camera-object-details summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+@supports (-webkit-appearance:none) {
+    .camera-object-details summary::-webkit-details-marker {
+        display: none;
+    }
+}
+
+/* Camera object styles */
+.camera-object {
+    display: flex;
+    flex-direction: column;
+    background-color: #0D253F;
+    border-radius: 3px;
+    border: #265C66;
+    padding: 3px;
+    color: #F2F2F2;
+    margin: 1px;
+    transition: transform 0.2s ease;
+}
+
+    .camera-object:hover {
+        border: 1px solid #007466;
+        background-color: #004445;
+        transform: scale(1.01);
+    }
+
+/* Camera row styles */
+.camera-row {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    background-color: midnightblue;
-    margin-bottom: 6px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    padding: 7px;
 }
 
-.camera-list {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch; /* To make sure each camera-object takes up the entire row */
-}
 
+/* Camera item variants */
 .camera-item {
     flex: 1;
-    display: flex; /* Add this to make it a flex container */
+    display: flex;
     align-items: center;
-    justify-content: center
+    justify-content: center;
 }
 
-.camera-item.status {
-    justify-content: start;
-}
+    .camera-item.status {
+        justify-content: start;
+    }
 
-.camera-item.notes {
-    justify-content: end;
-}
+    .camera-item.name {
+        font-size: 21px;
+        justify-content: start;
+    }
 
-.camera-item.location {
-    justify-content: end;
-    font-size: 14px;
-}
+    .camera-item.location {
+        font-size: 14px;
+    }
 
-.camera-item.name {
-    font-size: 21px;
-    justify-content: start;
-}
-
-
+    .camera-item.notes {
+        width: 100%;
+        justify-content: start;
+    }
+/* Dropdown styles */
 .dropdown {
     position: relative;
     display: inline-block;
@@ -71,16 +93,68 @@
     display: block;
 }
 
-.status-image {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    margin-right: 10px; /* Add space between image and dropdown */
+/* Button styles */
+.dropbtn {
+    background-color: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
 }
 
-.dropbtn {
-    background-color: transparent; /* Make button background transparent */
-    border: none; /* Remove default button styles */
-    color: white; /* Make the arrow white */
-    cursor: pointer; /* Indicates clickable */
+/* Status Image */
+.status-image {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    margin-right: 10px;
+}
+
+/* Notes section */
+.notes-section {
+    display: flex;
+    padding: 5px;
+    flex-direction: column;
+    justify-content: start;
+}
+
+.notes-form-section, 
+.notes-list-section {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    width: 100%;
+}
+
+.input-row,
+.submit-row {
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.input-row textarea,
+.submit-row button {
+    flex-grow: 1;
+}
+
+.notes-summery {
+    background-color: #002333;
+    border-radius: 4px;
+    padding: 5px;
+    border: 1px solid #002333;
+}
+
+.single-note {
+    background-color: #ffffff8d;
+    border-radius: 5px;
+    color: black;
+    padding: 5px;
+    margin: 3px 0 1px 0;
+    border: 1px solid black;
+}
+    .single-note:hover {
+        background-color: white;
+    }
+textarea, input[type="submit"], .action-button {
+    width: 100%;
 }
