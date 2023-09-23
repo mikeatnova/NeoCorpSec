@@ -1,27 +1,71 @@
-﻿.location-list-summery {
-    background-color: rgb(39, 39, 39);
-    margin-bottom: 3px;
-    padding: 3px 10px;
-    border-radius: 2px;
+﻿/* Global Styles */
+.text-center {
+    text-align: center;
+}
+
+.display-4 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+/* Camera List Specific */
+.camera-list {
+    padding: 5px;
+}
+
+.camera-list-details {
+    margin-bottom: 2px;
+    border-radius: 4px;
+    transition: transform 0.2s ease;
+}
+
+    .camera-list-details:hover {
+        border: 1px solid #007466;
+        transform: scale(1.01);
+    }
+
+.location-list-summery {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    border-bottom: 1px solid #cccccc7b;
+    position: relative;
 }
 
 .location-list-header {
-    font-size: 18px;
-}
-
-    .location-list-header:hover {
-        font-size: 19px;
-        color: rgb(169, 137, 31);
-    }
-
-.status-count {
-    margin-left: -10px;
+    margin: 0;
+    flex-grow: 1;
 }
 
 .camera-count {
-    margin: 0 25px 0 5px;
+    margin-left: 2px;
+    justify-content: start;
 }
 
-.middle-status {
-    margin: 0 20px;
+.status-spacing {
+    margin-right: 6px;
+}
+
+.status-container {
+    display: inline-flex;
+    justify-content: space-evenly;
+    width: 40px;
+    align-items: center;
+}
+
+
+.status-count {
+    margin-left: 5px;
+}
+
+.camera-partial {
+    padding: 5px;
+    background-color: #171717;
+    border-radius: 0 0 5px 5px;
+}
+
+.status-block {
+    position: absolute; /* Added */
+    right: 0;
 }
