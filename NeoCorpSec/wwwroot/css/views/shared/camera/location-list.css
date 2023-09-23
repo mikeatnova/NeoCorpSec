@@ -1,0 +1,27 @@
+﻿.location-list-summery {
+    background-color: rgb(39, 39, 39);
+    margin-bottom: 3px;
+    padding: 3px 10px;
+    border-radius: 2px;
+}
+
+.location-list-header {
+    font-size: 18px;
+}
+
+    .location-list-header:hover {
+        font-size: 19px;
+        color: rgb(169, 137, 31);
+    }
+
+.status-count {
+    margin-left: -10px;
+}
+
+.camera-count {
+    margin: 0 25px 0 5px;
+}
+
+.middle-status {
+    margin: 0 20px;
+}

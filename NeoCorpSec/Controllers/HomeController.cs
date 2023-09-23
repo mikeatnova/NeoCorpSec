@@ -90,7 +90,12 @@ namespace NeoCorpSec.Controllers
                     // Map LocationId to Location objects
                     ViewBag.LocationMap = locations.ToDictionary(l => l.ID); // O(N)
 
+                    var cameraStatusCounts = cameras.GroupBy(c => c.LocationId)
+                                .ToDictionary(g => g.Key,
+                                              g => g.GroupBy(c => c.CurrentStatus)
+                                                    .ToDictionary(s => s.Key, s => s.Count()));
 
+                    ViewBag.CameraStatusCounts = cameraStatusCounts;
                     return View(cameras);
                 }
             }

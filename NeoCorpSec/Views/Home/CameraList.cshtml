@@ -6,6 +6,7 @@
 
 @{
     var locationMap = ViewBag.LocationMap as Dictionary<int, NeoCorpSec.Models.CameraManagment.Location>;
+    var cameraStatusCounts = ViewBag.CameraStatusCounts as Dictionary<int, Dictionary<string, int>>;
     var cameraGroups = Model.GroupBy(camera => camera.LocationId); // O(N)
 }
 
@@ -19,8 +20,8 @@
         @foreach (var cameraGroup in cameraGroups) // O(N)
         {
             <details>
-                <summary>
-                    <h4 style="display:inline;">
+                <summary class="location-list-summery">
+                    <h4 class="location-list-header" style="display:inline;">
                         @{
                             var locationId = cameraGroup.Key;
                             if (locationMap.ContainsKey(locationId)) // O(1)
@@ -34,7 +35,33 @@
                             }
                         }
                     </h4>
-                    <span>(@cameraGroup.Count())</span>
+                    <span class="camera-count">(@cameraGroup.Count())</span>
+                    @{
+                        if (cameraStatusCounts.ContainsKey(locationId))
+                        {
+                            var statusCounts = cameraStatusCounts[locationId];
+
+                            @if (statusCounts.ContainsKey("Up"))
+                            {
+                                    <img class="status-image up-status" src="/images/grncircle.png" alt="Up" />
+                                    <span class="status-count">@statusCounts["Up"]</span>
+                            }
+
+                            @if (statusCounts.ContainsKey("Down"))
+                            {
+                                <span class="middle-status">
+                                    <img class="status-image down-status" src="/images/redcircle.png" alt="Down" />
+                                    <span class="status-count">@statusCounts["Down"]</span>
+                                </span>
+                            }
+
+                            @if (statusCounts.ContainsKey("Issues"))
+                            {
+                                    <img class="status-image issues-status" src="/images/warntriangle.png" alt="Issues" />
+                                    <span class="status-count">@statusCounts["Issues"]</span>
+                            }
+                        }
+                    }
                 </summary>
                 <div>
                     @foreach (var camera in cameraGroup) // O(N)
