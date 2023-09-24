@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using NeoCorpSec.Models.Reporting;
 
 namespace NeoCorpSec.Models.CameraManagment
 {
@@ -17,8 +18,9 @@ namespace NeoCorpSec.Models.CameraManagment
         [MaxLength(20)]
         public string Status { get; set; }
 
-        [MaxLength(256)]
-        public string Notes { get; set; }
+        [ForeignKey("Note")]
+        public int? NoteId { get; set; }
+        public Note Note { get; set; }
 
         [Required]
         public DateTime Timestamp { get; set; }

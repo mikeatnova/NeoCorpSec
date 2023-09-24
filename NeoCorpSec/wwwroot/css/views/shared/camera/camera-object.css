@@ -177,12 +177,18 @@ textarea, input[type="submit"], .action-button {
     margin: 1px;
     transition: transform 0.2s ease;
 }
-
     .camera-object:hover {
         border: 1px solid #007466;
         background-color: #004445;
         transform: scale(1.01);
     }
+        .camera-object:hover .name {
+        font-size: 32px;        
+        }
+        .camera-object:hover .status-image {
+            width: 32px;
+            height: 32px;
+        }
 
 .camera-object-details summary {
     list-style: none;
@@ -209,43 +215,27 @@ textarea, input[type="submit"], .action-button {
     height: 14px;
 }
 
-.dropdown {
-    position: relative;
-    display: inline-block;
+/* Existing styles */
+.dropbtn {
+    cursor: pointer;
     background-color: transparent;
+    color: white;
+    margin: 0px 5px;
 }
 
+/* Hide dropdown content by default */
 .dropdown-content {
     display: none;
     position: absolute;
     background-color: transparent;
-    min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
 }
 
-    .dropdown-content a {
-        color: black;
-        padding: 12px 16px;
-        text-decoration: none;
+    /* Show dropdown when active */
+    .dropdown-content.active {
         display: block;
-        background-color: #0D253F;
+        background-color: transparent;
     }
-
-        .dropdown-content a:hover {
-            background-color: #ddd;
-        }
-
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-.dropbtn {
-    background-color: transparent;
-    border: none;
-    color: white;
-    cursor: pointer;
-}
 
 
 /* Middle non-status block */
@@ -289,3 +279,36 @@ textarea, input[type="submit"], .action-button {
     .single-note:hover {
         background-color: white;
     }
+
+.custom-textarea {
+    width: 100%; /* Takes the full width of its parent container */
+    min-height: 200px; /* Sets the minimum height */
+    padding: 10px; /* Adds some internal space */
+    resize: vertical; /* Allows resizing in both dimensions */
+    overflow: hidden; /* Adds scrollbar if the content overflows */
+    border: 1px solid #ccc; /* Sets a border */
+    border-radius: 4px; /* Rounds the corners */
+    font-size: 16px; /* Sets the font size */
+}
+
+.submit-row {
+    display: flex;
+    justify-content: center;
+}
+
+.past-cameras-details {
+    padding: 5px;
+    margin: 5px;
+    transition: transform 0.2s ease;
+    border-radius: 3px;
+}
+    .past-cameras-details:hover {
+        border: 1px solid #007466;
+        background-color: #004445;
+        transform: scale(1.01);
+    }
+
+.notes-list-section {
+    margin-top: 20px;
+}
+

@@ -40,67 +40,21 @@
                     </div>
                     <span class="status-block">
                         @{
+                            string[] statuses = new[] { "Up", "Down", "Issues", "Unboxed" };
+                            string[] imgSrcs = new[] { "/images/grncircle.png", "/images/redcircle.png", "/images/warntriangle.png", "/images/unboxed.png" };
+
                             if (cameraStatusCounts.TryGetValue(locationId, out var statusCounts))
                             {
-                                int count = 0;
+                                int count;
+                                for (int i = 0; i < statuses.Length; i++)
+                                {
+                                    var status = statuses[i];
+                                    var imgSrc = imgSrcs[i];
+                                    var statusCount = statusCounts.TryGetValue(status, out count) ? count : 0;
 
-                                if (statusCounts.TryGetValue("Up", out count))
-                                {
                                     <span class="status-spacing status-container">
-                                        <img class="status-image up-status" src="/images/grncircle.png" alt="Up" />
-                                        <span class="status-count">@statusCounts["Up"]</span>
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="status-spacing status-container">
-                                        <img class="status-image up-status" src="/images/grncircle.png" alt="Up" />
-                                        <span class="status-count">0</span>
-                                    </span>
-                                }
-
-                                if (statusCounts.TryGetValue("Down", out count))
-                                {
-                                    <span class="status-spacing status-container">
-                                        <img class="status-image down-status" src="/images/redcircle.png" alt="Down" />
-                                        <span class="status-count">@statusCounts["Down"]</span>
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="status-spacing status-container">
-                                        <img class="status-image down-status" src="/images/redcircle.png" alt="Down" />
-                                        <span class="status-count">0</span>
-                                    </span>
-                                }
-
-                                if (statusCounts.TryGetValue("Issues", out count))
-                                {
-                                    <span class="status-spacing status-container">
-                                        <img class="status-image issues-status" src="/images/warntriangle.png" alt="Issues" />
-                                        <span class="status-count">@statusCounts["Issues"]</span>
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="status-spacing status-container">
-                                        <img class="status-image issues-status" src="/images/warntriangle.png" alt="Issues" />
-                                        <span class="status-count">0</span>
-                                    </span>
-                                }
-
-                                if (statusCounts.TryGetValue("Unboxed", out count))
-                                {
-                                    <span class="status-spacing status-container">
-                                        <img class="status-image unboxed-status" src="/images/unboxed.png" alt="Unboxed" />
-                                        <span class="status-count">@statusCounts["Unboxed"]</span>
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="status-spacing status-container">
-                                        <img class="status-image unboxed-status" src="/images/unboxed.png" alt="Unboxed" />
-                                        <span class="status-count">0</span>
+                                        <img class="status-image @(status.ToLower())-status" src="@imgSrc" alt="@status" />
+                                        <span class="status-count">@statusCount</span>
                                     </span>
                                 }
                             }
@@ -122,3 +76,4 @@
         <p>No cameras found.</p>
     }
 </div>
+
