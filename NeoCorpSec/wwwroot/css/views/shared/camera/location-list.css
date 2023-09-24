@@ -5,7 +5,7 @@
 
 .display-4 {
     font-size: 2.5em;
-    margin-bottom: 20px;
+    margin-bottom: 80px;
 }
 
 /* Camera List Specific */
@@ -14,7 +14,7 @@
 }
 
 .camera-list-details {
-    margin-bottom: 2px;
+    padding: 5px;
     border-radius: 4px;
     transition: transform 0.2s ease;
 }
@@ -22,6 +22,7 @@
     .camera-list-details:hover {
         border: 1px solid #007466;
         transform: scale(1.01);
+        background-color: #141313;
     }
 
 .location-list-summery {
@@ -53,7 +54,6 @@
     width: 40px;
     align-items: center;
 }
-
 
 .status-count {
     margin-left: 5px;

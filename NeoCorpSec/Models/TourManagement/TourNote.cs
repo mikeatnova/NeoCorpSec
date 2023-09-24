@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using NeoCorpSec.Models.Reporting;
 
 namespace NeoCorpSec.Models.TourManagement
 {
@@ -12,11 +13,12 @@ namespace NeoCorpSec.Models.TourManagement
 
         [ForeignKey("Tour")]
         public int TourId { get; set; }
+
         public virtual Tour Tour { get; set; }
 
-
-        [Required]
-        public string Note { get; set; }
+        [ForeignKey("Note")]
+        public int? NoteId { get; set; }
+        public Note Note { get; set; }
 
         [Required]
         public DateTime Timestamp { get; set; }
