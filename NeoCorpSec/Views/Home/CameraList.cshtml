@@ -37,21 +37,21 @@
                             }
                         </h4>
                         <span class="camera-count">(@cameraGroup.Count())</span>
-                        <div>
-                            <h4 class="location-list-address" style="display:inline;">
-                                @{
-                                    if (locationMap.ContainsKey(locationId)) // O(1), reusing locationId
-                                    {
-                                        var location = locationMap[locationId];
-                                        @:@location.Name, @location.City, @location.State
-                                    }
-                                    else
-                                    {
-                                        @:Unknown Location
-                                    }
+                    <div>
+                        <h4 class="location-list-address" style="display:inline;">
+                            @{
+                                if (locationMap.ContainsKey(locationId)) // O(1), reusing locationId
+                                {
+                                    var location = locationMap[locationId];
+                                    @:@location.Name, @location.City, @location.State
                                 }
-                            </h4>
-                        </div>
+                                else
+                                {
+                                    @:Unknown Location
+                                }
+                            }
+                        </h4>
+                    </div>
                     </div>
 
 
@@ -93,5 +93,19 @@
     {
         <p>No cameras found.</p>
     }
+    <div>
+        @if (TempData["ApiError"] != null)
+        {
+            <div class="alert alert-danger text-center text-dark">
+                @TempData["ApiError"]
+            </div>
+        }
+        @if (TempData["ApiMessage"] != null)
+        {
+            <div class="alert alert-success text-center text-dark">
+                @TempData["ApiMessage"]
+            </div>
+        }
+    </div>
 </div>
 
