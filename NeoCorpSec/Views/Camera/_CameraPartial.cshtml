@@ -1,8 +1,11 @@
 ﻿@using System.Text.RegularExpressions;
+@using System.Linq;
 @model NeoCorpSec.Models.CameraManagement.Camera
 
 @{
     var locationMap = ViewBag.LocationMap as Dictionary<int, NeoCorpSec.Models.CameraManagement.Location>;
+    var cameraNotes = ViewBag.CameraNotes as Dictionary<int, List<NeoCorpSec.Models.Reporting.Note>>;
+    List<NeoCorpSec.Models.Reporting.Note> notesForThisCamera;
 }
 
 
@@ -26,13 +29,10 @@
                     <div class="dropdown-content" id="dropdown-content-@Model.ID">
                         @foreach (var status in new string[] { "Up", "Issues", "Down", "Decommissioned", "Unboxed" })
                         {
-                            <form method="post" asp-controller="Home" asp-action="PutCamera">
-                                <input type="hidden" name="ID" value="@Model.ID" />
-                                <input type="hidden" name="Name" value="@Model.Name" />
-                                <input type="hidden" name="LocationId" value="@Model.LocationId" />
-                                <input type="hidden" name="CreatedAt" value="@Model.CreatedAt" />
-                                <input type="hidden" name="CurrentStatus" value="@status" />
-                                <input type="submit" value="@status" />
+                            <form method="post" asp-action="EditCameraCurrentStatus" asp-controller="Home">
+                                <input type="hidden" name="cameraId" value="@Model.ID" />
+                                <input type="hidden" name="newStatus" value="@status" />
+                                <button type="submit">@status</button>
                             </form>
                         }
                     </div>
@@ -83,12 +83,18 @@
                 </div>
                 <details class="past-cameras-details">
                     <summary>
-                        <div class="text-center past-cameras-title arrow-container">Camera Note History</div>
+                        <div class="text-center past-cameras-title arrow-container">
+                            Camera Note History
+                            @{
+                                if (cameraNotes != null && cameraNotes.TryGetValue(Model.ID, out notesForThisCamera))
+                                {
+                                    <span class="note-count">(@notesForThisCamera.Count)</span>
+                                }
+                            }
+                        </div>
                     </summary>
                     <div class="notes-list-section">
                         @{
-                            var cameraNotes = ViewBag.CameraNotes as Dictionary<int, List<NeoCorpSec.Models.Reporting.Note>>;
-                            List<NeoCorpSec.Models.Reporting.Note> notesForThisCamera;
                             if (cameraNotes != null && cameraNotes.TryGetValue(Model.ID, out notesForThisCamera))
                             {
                                 var sortedNotes = notesForThisCamera.OrderByDescending(note => note.CreatedAt).ToList();

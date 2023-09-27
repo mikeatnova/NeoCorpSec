@@ -1,17 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NeoCorpSec.Models;
-using NeoCorpSec.Models.Authenitcation;
+using Microsoft.AspNetCore.JsonPatch;
 using NeoCorpSec.Models.Reporting;
 using NeoCorpSec.Services;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using NeoCorpSec.Models.CameraManagement;
 
 namespace NeoCorpSec.Controllers
 {
@@ -139,8 +138,6 @@ namespace NeoCorpSec.Controllers
             return View(new List<Models.CameraManagement.Camera>());
         }
 
-
-
         [HttpPost]
         public async Task<IActionResult> AddNoteToCamera(int cameraId, string newNote, string noteableType)
         {
@@ -200,6 +197,66 @@ namespace NeoCorpSec.Controllers
             }
             catch (Exception ex)
             {
+                return View("Error", new { message = $"An exception occurred: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditCameraCurrentStatus(int cameraId, string newStatus)
+        {
+            try
+            {
+                using (var httpClient = InitializeHttpClient())
+                {
+                    string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+
+                    // Fetch the existing camera
+                    var fetchResponse = await httpClient.GetAsync($"{baseUrl}/api/Camera/{cameraId}");
+
+                    if (fetchResponse.IsSuccessStatusCode)
+                    {
+                        var cameraJson = await fetchResponse.Content.ReadAsStringAsync();
+                        var existingCamera = JsonConvert.DeserializeObject<Camera>(cameraJson);
+
+                        // Update the fields you want to change
+                        existingCamera.CurrentStatus = newStatus;
+                        existingCamera.ModifiedAt = DateTime.UtcNow;
+
+                        // Serialize it
+                        var updateContent = new StringContent(JsonConvert.SerializeObject(existingCamera), Encoding.UTF8, "application/json");
+
+                        // Send the PUT request
+                        var updateResponse = await httpClient.PutAsync($"{baseUrl}/api/Camera/{cameraId}", updateContent);
+
+                        if (updateResponse.IsSuccessStatusCode)
+                        {
+                            // Success case
+                            TempData["ApiMessage"] = $"Camera '{existingCamera.Name}' was updated successfully";
+                            return RedirectToAction("CameraList");
+                        }
+                        else
+                        {
+                            // Handle error
+                            var errorContent = await updateResponse.Content.ReadAsStringAsync();
+                            _logger.LogError($"Error updating camera: {errorContent}");
+                            TempData["ApiError"] = $"Error: {updateResponse.StatusCode}, {updateResponse.ReasonPhrase}";
+                            return View("Error", new { message = $"Error: {updateResponse.StatusCode}, {updateResponse.ReasonPhrase}" });
+                        }
+                    }
+                    else
+                    {
+                        // Handle error
+                        var errorContent = await fetchResponse.Content.ReadAsStringAsync();
+                        _logger.LogError($"Error fetching camera: {errorContent}");
+                        TempData["ApiError"] = $"Error: {fetchResponse.StatusCode}, {fetchResponse.ReasonPhrase}";
+                        return View("Error", new { message = $"Error: {fetchResponse.StatusCode}, {fetchResponse.ReasonPhrase}" });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception occurred: {ex.Message}");
+                TempData["ApiError"] = $"An exception occurred: {ex.Message}";
                 return View("Error", new { message = $"An exception occurred: {ex.Message}" });
             }
         }

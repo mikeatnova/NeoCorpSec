@@ -213,28 +213,48 @@ textarea, input[type="submit"], .action-button {
     height: 14px;
 }
 
-/* Existing styles */
-.dropbtn {
-    cursor: pointer;
+.dropdown {
+    position: relative;
+    display: inline-block;
     background-color: transparent;
-    color: white;
-    margin: 0px 5px;
 }
 
-/* Hide dropdown content by default */
 .dropdown-content {
     display: none;
     position: absolute;
     background-color: transparent;
+    min-width: 100%; /* Make it take the full width of its parent */
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 9999;
 }
 
-    /* Show dropdown when active */
-    .dropdown-content.active {
-        display: block;
-        background-color: transparent;
+    .dropdown-content button {
+        display: block; /* Stack them vertically */
+        width: 100%; /* Full width */
+        padding: 12px 16px;
+        background-color: black; /* Adjust as needed */
+        border: none; /* Remove default borders */
+        color: white; /* Adjust text color as needed */
+        cursor: pointer; /* Make it obvious it's clickable */
+        text-align: left;
     }
 
+
+        .dropdown-content button:hover {
+            background-color: #ddd; /* Hover effect */
+            color: black;
+        }
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropbtn {
+    background-color: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
 
 /* Middle non-status block */
 .non-status-block {
