@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using NeoCorpSec.Models.Reporting;
 
 namespace NeoCorpSec.Models.TourManagement
 {
@@ -26,6 +27,8 @@ namespace NeoCorpSec.Models.TourManagement
         [ForeignKey("Camera")]
         public int CameraId { get; set; }
 
-        public virtual ICollection<TourNote> TourNotes { get; set; }
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     }
 }

@@ -11,6 +11,7 @@
 /* Camera List Specific */
 .camera-list {
     padding: 5px;
+    margin-bottom: 90px;
 }
 
 .camera-list-details {
@@ -37,6 +38,12 @@
 .location-list-header {
     margin: 0;
     flex-grow: 1;
+}
+
+.location-list-address {
+    margin: 0;
+    flex-grow: 1;
+    font-size: 16px;
 }
 
 .camera-count {

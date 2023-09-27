@@ -2,10 +2,10 @@
     ViewData["Title"] = "Camera List Page";
 }
 
-@model List<NeoCorpSec.Models.CameraManagment.Camera>
+@model List<NeoCorpSec.Models.CameraManagement.Camera>
 
 @{
-    var locationMap = ViewBag.LocationMap as Dictionary<int, NeoCorpSec.Models.CameraManagment.Location>;
+    var locationMap = ViewBag.LocationMap as Dictionary<int, NeoCorpSec.Models.CameraManagement.Location>;
     var cameraStatusCounts = ViewBag.CameraStatusCounts as Dictionary<int, Dictionary<string, int>>;
     var cameraGroups = Model.GroupBy(camera => camera.LocationId); // O(N)
 }
@@ -37,7 +37,25 @@
                             }
                         </h4>
                         <span class="camera-count">(@cameraGroup.Count())</span>
+                        <div>
+                            <h4 class="location-list-address" style="display:inline;">
+                                @{
+                                    if (locationMap.ContainsKey(locationId)) // O(1), reusing locationId
+                                    {
+                                        var location = locationMap[locationId];
+                                        @:@location.Name, @location.City, @location.State
+                                    }
+                                    else
+                                    {
+                                        @:Unknown Location
+                                    }
+                                }
+                            </h4>
+                        </div>
                     </div>
+
+
+
                     <span class="status-block">
                         @{
                             string[] statuses = new[] { "Up", "Down", "Issues", "Unboxed" };

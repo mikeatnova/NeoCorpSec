@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using NeoCorpSec.Models.Reporting;
 
 namespace NeoCorpSec.Models.ShiftManagement
 {
@@ -26,6 +27,8 @@ namespace NeoCorpSec.Models.ShiftManagement
         [Required]
         public int ToursCompleted { get; set; }
 
-        public virtual ICollection<ShiftNote> ShiftNotes { get; set; }
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     }
 }
