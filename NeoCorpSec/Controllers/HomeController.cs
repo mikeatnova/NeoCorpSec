@@ -1,10 +1,17 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NeoCorpSec.Models;
+using NeoCorpSec.Models.Authenitcation;
+using NeoCorpSec.Models.Reporting;
 using NeoCorpSec.Services;
+using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Net.Http;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NeoCorpSec.Controllers
 {
@@ -51,6 +58,8 @@ namespace NeoCorpSec.Controllers
             return View();
         }
 
+
+
         [HttpGet]
         public async Task<IActionResult> CameraList()
         {
@@ -72,55 +81,130 @@ namespace NeoCorpSec.Controllers
             {
                 // Fetch Cameras
                 var cameraResponse = await httpClient.GetAsync($"{baseUrl}/api/Camera");
-
                 // Fetch Locations
                 var locationResponse = await httpClient.GetAsync($"{baseUrl}/api/Location");
+                // Fetch Locations
+                var noteResponse = await httpClient.GetAsync($"{baseUrl}/api/Note");
 
-                if (cameraResponse.IsSuccessStatusCode && locationResponse.IsSuccessStatusCode)
+                var cameraOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                var locationOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                var noteOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+                List<Models.CameraManagement.Camera> cameras = new List<Models.CameraManagement.Camera>();
+                List<Models.CameraManagement.Location> locations = new List<Models.CameraManagement.Location>();
+                List<Models.Reporting.Note> notes = new List<Models.Reporting.Note>();
+
+                if (cameraResponse.IsSuccessStatusCode)
                 {
+                    // Handle camera data
                     var cameraContent = await cameraResponse.Content.ReadAsStringAsync();
+                    cameras = JsonSerializer.Deserialize<List<Models.CameraManagement.Camera>>(cameraContent, cameraOptions);
+                }
+
+                if (locationResponse.IsSuccessStatusCode)
+                {
+                    // Handle location data
                     var locationContent = await locationResponse.Content.ReadAsStringAsync();
+                    locations = JsonSerializer.Deserialize<List<Models.CameraManagement.Location>>(locationContent, locationOptions);
+                }
 
-                    var cameraOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                    var locationOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                if (noteResponse.IsSuccessStatusCode)
+                {
+                    // Handle camera note data
+                    var noteContent = await noteResponse.Content.ReadAsStringAsync();
+                    notes = JsonSerializer.Deserialize<List<Models.Reporting.Note>>(noteContent, noteOptions);
+                }
 
-                    var cameras = JsonSerializer.Deserialize<List<Models.CameraManagment.Camera>>(cameraContent, cameraOptions);
-                    var locations = JsonSerializer.Deserialize<List<Models.CameraManagment.Location>>(locationContent, locationOptions);
-
+                if (cameraResponse.IsSuccessStatusCode && locationResponse.IsSuccessStatusCode && noteResponse.IsSuccessStatusCode)
+                {
                     // Map LocationId to Location objects
                     ViewBag.LocationMap = locations.ToDictionary(l => l.ID); // O(N)
 
+                    // Group notes by CameraId
+                    var cameraSpecificNotes = notes.Where(n => n.NoteableType == "Camera")
+                                .GroupBy(n => n.NoteableId)
+                                .ToDictionary(g => g.Key, g => g.ToList()); // O(N)
+                    ViewBag.CameraNotes = cameraSpecificNotes;
+
                     var cameraStatusCounts = cameras.GroupBy(c => c.LocationId)
-                                .ToDictionary(g => g.Key,
-                                              g => g.GroupBy(c => c.CurrentStatus)
-                                                    .ToDictionary(s => s.Key, s => s.Count()));
+                                            .ToDictionary(g => g.Key,
+                                                          g => g.GroupBy(c => c.CurrentStatus)
+                                                                .ToDictionary(s => s.Key, s => s.Count())); // O(N)
 
                     ViewBag.CameraStatusCounts = cameraStatusCounts;
+
                     return View(cameras);
                 }
             }
-            return View(new List<Models.CameraManagment.Camera>());
+            return View(new List<Models.CameraManagement.Camera>());
         }
 
+
+
         [HttpPost]
-        public async Task<IActionResult> PutCamera(int id, Models.CameraManagment.Camera camera)
+        public async Task<IActionResult> AddNoteToCamera(int cameraId, string newNote, string noteableType)
         {
-            using (var httpClient = InitializeHttpClient())
+            try
             {
-                string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
-                camera.ModifiedAt = DateTime.UtcNow;
-                var json = JsonSerializer.Serialize(camera);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await httpClient.PutAsync($"{baseUrl}/api/Camera/{id}", content);
-                if (response.IsSuccessStatusCode)
+                // Extract user claims
+                var claims = _jwtExtractorHelper.GetClaimsFromJwt();
+                if (claims == null)
                 {
-                    // Redirect to the GET action to refresh the page
-                    return RedirectToAction("CameraList");
+                    return View("Error", new { message = "Claims are null" });
                 }
+
+                string identityUserId = claims?.FindFirst("sub")?.Value ?? string.Empty;
+                string username = claims.FindFirst(ClaimTypes.Name)?.Value;
+
+                if (string.IsNullOrEmpty(identityUserId) || string.IsNullOrEmpty(username))
+                {
+                    return View("Error", new { message = "User identity is not valid" });
+                }
+
+                // Create Note object
+                var newNoteObj = new Note
+                {
+                    UserId = identityUserId,
+                    Content = newNote,
+                    Username = username,
+                    NoteableType = noteableType,
+                    NoteableId = cameraId,
+                };
+
+                // Initialize HttpClient
+                using (var httpClient = InitializeHttpClient())
+                {
+                    string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+
+                    // Log the object being sent
+                    Console.WriteLine($"Sending Note Object: {JsonSerializer.Serialize(newNoteObj)}");
+
+                    var json = JsonSerializer.Serialize(newNoteObj);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+                    var response = await httpClient.PostAsync($"{baseUrl}/api/Note", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Success case
+                        return RedirectToAction("CameraList");
+                    }
+                    else
+                    {
+                        // Log the error status and description
+                        Console.WriteLine($"Error: {response.StatusCode}, {response.ReasonPhrase}");
+                        Console.WriteLine($"Error Content: {await response.Content.ReadAsStringAsync()}");
+                        return View("Error", new { message = $"Error: {response.StatusCode}, {response.ReasonPhrase}" });
+                    }
+                }
+
             }
-            // Handle error, e.g., return a view with an error message
-            return View("Error");
+            catch (Exception ex)
+            {
+                return View("Error", new { message = $"An exception occurred: {ex.Message}" });
+            }
         }
+
+
 
         public IActionResult Reports()
         {

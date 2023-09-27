@@ -2,19 +2,21 @@
 using System.ComponentModel.DataAnnotations;
 using NeoCorpSec.Models.Reporting;
 
-namespace NeoCorpSec.Models.TourManagement
+namespace NeoCorpSec.Models.CameraManagement
 {
-    [Table("TourNotes")]
-    public class TourNote
+    [Table("CameraStatuses")]
+    public class CameraStatus
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
 
-        [ForeignKey("Tour")]
-        public int TourId { get; set; }
+        [ForeignKey("Camera")]
+        public int CameraId { get; set; }
 
-        public virtual Tour Tour { get; set; }
+        [Required]
+        [MaxLength(20)]
+        public string Status { get; set; }
 
         [ForeignKey("Note")]
         public int? NoteId { get; set; }
@@ -22,5 +24,8 @@ namespace NeoCorpSec.Models.TourManagement
 
         [Required]
         public DateTime Timestamp { get; set; }
+
+        [Required]
+        public bool IsHistorical { get; set; }
     }
 }

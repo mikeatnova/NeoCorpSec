@@ -195,8 +195,6 @@ textarea, input[type="submit"], .action-button {
     cursor: pointer;
 }
 
-
-
 .camera-row {
     display: flex;
     justify-content: space-between;
@@ -280,6 +278,10 @@ textarea, input[type="submit"], .action-button {
         background-color: white;
     }
 
+.note-badge {
+    font-weight: bold;
+}
+
 .custom-textarea {
     width: 100%; /* Takes the full width of its parent container */
     min-height: 200px; /* Sets the minimum height */
@@ -294,21 +296,29 @@ textarea, input[type="submit"], .action-button {
 .submit-row {
     display: flex;
     justify-content: center;
+    margin: 10px 0;
 }
 
 .past-cameras-details {
     padding: 5px;
-    margin: 5px;
+    margin: 5px 0 0 0;
     transition: transform 0.2s ease;
     border-radius: 3px;
+    color: #f7f7f77f;
+    background-color: #141313;
+    border: 1px solid #007466;
 }
     .past-cameras-details:hover {
-        border: 1px solid #007466;
+        border: 1px solid #141313;
         background-color: #004445;
         transform: scale(1.01);
-    }
-
+        color: white;
+    }   
 .notes-list-section {
     margin-top: 20px;
+    padding: 10px 5px;
+    background-color: #141313;
+    border-radius: 3px;
+    color: #f7f7f77f;
 }
 

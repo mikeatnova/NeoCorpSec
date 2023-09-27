@@ -1,8 +1,8 @@
 ﻿@using System.Text.RegularExpressions;
-@model NeoCorpSec.Models.CameraManagment.Camera
+@model NeoCorpSec.Models.CameraManagement.Camera
 
 @{
-    var locationMap = ViewBag.LocationMap as Dictionary<int, NeoCorpSec.Models.CameraManagment.Location>;
+    var locationMap = ViewBag.LocationMap as Dictionary<int, NeoCorpSec.Models.CameraManagement.Location>;
 }
 
 
@@ -30,7 +30,6 @@
                                 <input type="hidden" name="ID" value="@Model.ID" />
                                 <input type="hidden" name="Name" value="@Model.Name" />
                                 <input type="hidden" name="LocationId" value="@Model.LocationId" />
-                                <input type="hidden" name="Notes" value="@Model.NoteId" />
                                 <input type="hidden" name="CreatedAt" value="@Model.CreatedAt" />
                                 <input type="hidden" name="CurrentStatus" value="@status" />
                                 <input type="submit" value="@status" />
@@ -43,21 +42,6 @@
                 <!-- Camera Name block -->
                 <div class="name">
                     @Model.Name
-                </div>
-
-                <!-- Camera Location block -->
-                <div class="location">
-                    @{
-                        if (locationMap.ContainsKey(Model.LocationId))
-                        {
-                            var location = locationMap[Model.LocationId];
-                            @:@location.Name, @location.City, @location.State
-                        }
-                        else
-                        {
-                            @:Unknown Location
-                        }
-                    }
                 </div>
 
                 <!-- Last Modified block-->
@@ -85,13 +69,15 @@
         <div class="camera-item notes">
             <div class="notes-section">
                 <div class="notes-form-section">
-                    <form method="post" asp-action="UpdateNotes" asp-controller="Camera">
+                    <form method="post" asp-action="AddNoteToCamera" asp-controller="Home">
                         <div class="input-row">
                             <input type="hidden" name="cameraId" value="@Model.ID" />
+                            <input type="hidden" name="noteableType" value="Camera" />
+
                             <textarea class="custom-textarea" name="newNote" placeholder="Add a note..."></textarea>
                         </div>
                         <div class="submit-row">
-                            <button class="action-button" type="submit">Submit Note</button>
+                            <button class="btn w-100 action-button" type="submit">Submit Note</button>
                         </div>
                     </form>
                 </div>
@@ -100,12 +86,34 @@
                         <div class="text-center past-cameras-title arrow-container">Camera Note History</div>
                     </summary>
                     <div class="notes-list-section">
-                        <p class="text-center">No notes available.</p>
+                        @{
+                            var cameraNotes = ViewBag.CameraNotes as Dictionary<int, List<NeoCorpSec.Models.Reporting.Note>>;
+                            List<NeoCorpSec.Models.Reporting.Note> notesForThisCamera;
+                            if (cameraNotes != null && cameraNotes.TryGetValue(Model.ID, out notesForThisCamera))
+                            {
+                                var sortedNotes = notesForThisCamera.OrderByDescending(note => note.CreatedAt).ToList();
+                                foreach (var note in sortedNotes)
+                                {
+                                    <div class="single-note">
+                                        <span class="note-badge">@note.Username:</span>
+                                        <span class="note-badge">@ConvertToEasternTime(note.CreatedAt.ToString("o"))</span>
+                                        <span>@note.Content</span>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-center">No notes yet.</p>
+                            }
+                        }
                     </div>
+
                 </details>
             </div>
         </div>
     </div>
+
+
 </details>
 
 

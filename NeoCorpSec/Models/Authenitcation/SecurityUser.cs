@@ -9,7 +9,7 @@ namespace NeoCorpSec.Models.Authenitcation
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID { get; set; }
+        public string ID { get; set; }
 
         [MaxLength(50)]
         public string? FirstName { get; set; }
