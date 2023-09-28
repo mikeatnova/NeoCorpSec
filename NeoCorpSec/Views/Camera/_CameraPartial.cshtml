@@ -73,11 +73,8 @@
                         <div class="input-row">
                             <input type="hidden" name="cameraId" value="@Model.ID" />
                             <input type="hidden" name="noteableType" value="Camera" />
-
-                            <textarea class="custom-textarea" name="newNote" placeholder="Add a note..."></textarea>
-                        </div>
-                        <div class="submit-row">
-                            <button class="btn w-100 action-button" type="submit">Submit Note</button>
+                            <textarea id="noteInput" required class="custom-textarea" name="newNote" placeholder="Add a note..."></textarea>
+                            <button id="submitButton" class="btn w-100 action-button" type="submit">Submit Note</button>
                         </div>
                     </form>
                 </div>

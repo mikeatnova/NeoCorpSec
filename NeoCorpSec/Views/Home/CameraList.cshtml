@@ -58,8 +58,8 @@
 
                     <span class="status-block">
                         @{
-                            string[] statuses = new[] { "Up", "Down", "Issues", "Unboxed" };
-                            string[] imgSrcs = new[] { "/images/grncircle.png", "/images/redcircle.png", "/images/warntriangle.png", "/images/unboxed.png" };
+                            string[] statuses = new[] { "Up", "Issues", "Down", "Decommissioned", "Unboxed" };
+                            string[] imgSrcs = new[] { "/images/grncircle.png", "/images/warntriangle.png", "/images/redcircle.png", "/images/greycircle.png", "/images/unboxed.png" };
 
                             if (cameraStatusCounts.TryGetValue(locationId, out var statusCounts))
                             {
