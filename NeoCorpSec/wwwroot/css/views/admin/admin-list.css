@@ -1,0 +1,53 @@
+﻿/* Custom styling for summary tag */
+.admin-summary {
+    display: flex;
+    align-items: center;
+    list-style: none;
+}
+/* Custom styling for h2 inside summary */
+.admin-summary h2 {
+    margin: 0;
+}
+/* Remove default arrow */
+.admin-summary::-webkit-details-marker {
+    display: none;
+}
+/* Add custom arrow */
+.admin-summary::before {
+    content: '▶';
+    font-size: 1.5em;
+    margin-right: 0.5em;
+    transition: transform 0.2s ease-in-out;
+}
+/* Rotate custom arrow when details are open */
+details[open] .admin-summary::before {
+    transform: rotate(90deg);
+}
+
+.clickable-row {
+    transition: transform 0.2s ease;
+}
+
+    .clickable-row:hover {
+        border: 1px solid #007466;
+        background-color: #004445;
+        transform: scale(1.01);
+    }
+
+.admin-input-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-user-input-details:focus {
+    border: 2px solid #007bff; /* Blue border */
+    background-color: #f1f1f1;
+    min-width: 400px/* Light gray background */
+}
+
+.admin-user-input-details:not(:focus) {
+    border: 1px solid #ccc; /* Gray border */
+    background-color: #fff; /* White background */
+}
+

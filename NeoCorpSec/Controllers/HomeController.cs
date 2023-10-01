@@ -11,6 +11,9 @@ using System.Text;
 using System.Text.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using NeoCorpSec.Models.CameraManagement;
+using NeoCorpSec.Models.Authenitcation;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace NeoCorpSec.Controllers
 {
@@ -73,7 +76,8 @@ namespace NeoCorpSec.Controllers
                 {6, Tuple.Create("Central Falls", "Rhode Island")},
                 {7, Tuple.Create("Thorndike", "Maine")},
                 {8, Tuple.Create("Greenville Junction", "Maine")},
-                {9, Tuple.Create("Woodbury", "New Jersey")}
+                {9, Tuple.Create("Woodbury", "New Jersey")},
+                {13, Tuple.Create("Polaris", "Andromeda")}
             };
             ViewBag.LocationMap = locationMap;
             using (var httpClient = InitializeHttpClient())
@@ -152,6 +156,9 @@ namespace NeoCorpSec.Controllers
 
                 string identityUserId = claims?.FindFirst("sub")?.Value ?? string.Empty;
                 string username = claims.FindFirst(ClaimTypes.Name)?.Value;
+                string firstName = claims.FindFirst(ClaimTypes.GivenName)?.Value;
+                string lastName = claims.FindFirst(ClaimTypes.Surname)?.Value;
+                string role = claims.FindFirst(ClaimTypes.Role)?.Value;
 
                 if (string.IsNullOrEmpty(identityUserId) || string.IsNullOrEmpty(username))
                 {
@@ -164,6 +171,9 @@ namespace NeoCorpSec.Controllers
                     UserId = identityUserId,
                     Content = newNote,
                     Username = username,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Role = role,
                     NoteableType = noteableType,
                     NoteableId = cameraId,
                 };
@@ -182,24 +192,55 @@ namespace NeoCorpSec.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        // Success case
+                        // Success case for adding note
+                        TempData["SuccessMessage"] = $"Note was successfully added to camera {cameraId}";
+
+                        // Fetch the existing camera to update ModifiedAt
+                        var fetchCameraResponse = await httpClient.GetAsync($"{baseUrl}/api/Camera/{cameraId}");
+                        if (fetchCameraResponse.IsSuccessStatusCode)
+                        {
+                            var cameraJson = await fetchCameraResponse.Content.ReadAsStringAsync();
+                            var existingCamera = JsonConvert.DeserializeObject<Camera>(cameraJson);
+
+                            // Update ModifiedAt
+                            existingCamera.ModifiedAt = DateTime.UtcNow;
+
+                            // Serialize updated camera
+                            var updateCameraContent = new StringContent(JsonConvert.SerializeObject(existingCamera), Encoding.UTF8, "application/json");
+
+                            // Send PUT request to update camera
+                            var updateCameraResponse = await httpClient.PutAsync($"{baseUrl}/api/Camera/{cameraId}", updateCameraContent);
+
+                            if (updateCameraResponse.IsSuccessStatusCode)
+                            {
+                                TempData["UpdateMessage"] = $"Camera {cameraId} ModifiedAt was successfully updated.";
+                            }
+                            else
+                            {
+                                TempData["FailureMessage"] = $"Failed to update ModifiedAt for camera {cameraId}";
+                            }
+                        }
+                        else
+                        {
+                            TempData["FailureMessage"] = $"Failed to fetch camera {cameraId} for updating ModifiedAt";
+                        }
+
                         return RedirectToAction("CameraList");
                     }
                     else
                     {
-                        // Log the error status and description
-                        Console.WriteLine($"Error: {response.StatusCode}, {response.ReasonPhrase}");
-                        Console.WriteLine($"Error Content: {await response.Content.ReadAsStringAsync()}");
+                        TempData["FailureMessage"] = $"Failed to add note to camera {cameraId}";
                         return View("Error", new { message = $"Error: {response.StatusCode}, {response.ReasonPhrase}" });
                     }
                 }
-
             }
             catch (Exception ex)
             {
+                TempData["FailureMessage"] = $"An exception occurred while adding note to camera {cameraId}";
                 return View("Error", new { message = $"An exception occurred: {ex.Message}" });
             }
         }
+
 
         [HttpPost]
         public async Task<IActionResult> EditCameraCurrentStatus(int cameraId, string newStatus)
@@ -273,10 +314,71 @@ namespace NeoCorpSec.Controllers
             return View();
         }
 
-        public IActionResult Admin()
+        public async Task<IActionResult> Admin()
         {
-            return View();
+            string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+            using (var httpClient = InitializeHttpClient())
+            {
+                // Fetch Security Users
+                var securityUserResponse = await httpClient.GetAsync($"{baseUrl}/api/Auth/get-security-users");
+
+                var securityUserOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+                List<AdminCombinedSecurityUser> securityUsers = new List<AdminCombinedSecurityUser>();
+
+                if (securityUserResponse.IsSuccessStatusCode)
+                {
+                    // Handle Security User data
+                    var securityUserContent = await securityUserResponse.Content.ReadAsStringAsync();
+                    securityUsers = JsonSerializer.Deserialize<List<AdminCombinedSecurityUser>>(securityUserContent, securityUserOptions);
+
+                    // Sort the list by the first role in each user's role list
+                    securityUsers = securityUsers.OrderBy(u => u.Roles.FirstOrDefault()).ToList();
+                }
+
+                return View("Admin", securityUsers); // Return the sorted list to the Admin View
+            }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AdminUpdateSecurityUser(UpdateSecurityUserDto updatedUser)
+        {
+            try
+            {
+                // Initialize HTTP client and base URL
+                string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+                using (var httpClient = InitializeHttpClient())
+                {
+                    // Serialize the updatedUser object to JSON and prepare HTTP content
+                    var json = JsonConvert.SerializeObject(updatedUser);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // Make the PUT request
+                    var response = await httpClient.PutAsync($"{baseUrl}/api/Auth/update-security-user", content);
+
+                    // Handle response
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = $"{updatedUser.UserName} has been updated successfully.";
+                        return RedirectToAction("Admin");
+                    }
+                    else
+                    {
+                        _logger.LogError($"Error updating security user: {await response.Content.ReadAsStringAsync()}");
+                        TempData["ErrorMessage"] = $"Failed to update {updatedUser.UserName}.";
+                        return View("Error", new { message = $"Error: {response.StatusCode}, {response.ReasonPhrase}" });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception occurred: {ex.Message}");
+                TempData["ErrorMessage"] = $"An exception occurred while updating {updatedUser.UserName}.";
+                return View("Error", new { message = $"An exception occurred: {ex.Message}" });
+            }
+        }
+
+
         [AllowAnonymous]
         public IActionResult Privacy()
         {

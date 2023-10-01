@@ -14,6 +14,34 @@
     <h1 class="display-4">Camera List Page</h1>
 </div>
 
+<div>
+    @if (TempData["ApiError"] != null)
+    {
+        <div class="alert alert-danger text-center text-dark">
+            @TempData["ApiError"]
+        </div>
+    }
+    @if (TempData["ApiMessage"] != null)
+    {
+        <div class="alert alert-success text-center text-dark">
+            @TempData["ApiMessage"]
+        </div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success text-center text-dark">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["FailureMessage"] != null)
+    {
+        <div class="alert alert-danger text-center text-dark">
+            @TempData["FailureMessage"]
+        </div>
+    }
+</div>
+
+
 <div class="camera-list">
     @if (Model != null && Model.Count > 0)
     {
@@ -93,19 +121,5 @@
     {
         <p>No cameras found.</p>
     }
-    <div>
-        @if (TempData["ApiError"] != null)
-        {
-            <div class="alert alert-danger text-center text-dark">
-                @TempData["ApiError"]
-            </div>
-        }
-        @if (TempData["ApiMessage"] != null)
-        {
-            <div class="alert alert-success text-center text-dark">
-                @TempData["ApiMessage"]
-            </div>
-        }
-    </div>
 </div>
 

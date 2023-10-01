@@ -1,7 +1,140 @@
 ﻿@{
     ViewData["Title"] = "Admin Page";
+    var sortedModel = Model.OrderBy(u => u.Roles.FirstOrDefault()).ToList();
+    var successMessage = TempData["SuccessMessage"] as string;
+    var errorMessage = TempData["ErrorMessage"] as string;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Home/Admin Page</h1>
+@model List<NeoCorpSec.Models.Authenitcation.AdminCombinedSecurityUser>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success" role="alert">
+        @successMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+    </div>
+}
+
+<div>
+    <h1 class="display-4 text-center">Admin Page</h1>
+
+    <div class="container">
+        <!-- Users Section -->
+        <details open>
+            <summary class="admin-summary"><h2>Users</h2></summary>
+            <div id="users-section">
+                @if (Model != null && Model.Count > 0)
+                {
+                    <table class="table text-light">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Hired Date</th>
+                                <th>ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                <tr class="clickable-row" data-toggle="collapse" data-target="#details-@user.Id">
+                                    <td>@string.Join(", ", user.Roles)</td>
+                                    <td>@user.FirstName</td>
+                                    <td>@user.LastName</td>
+                                    <td>@user.UserName</td>
+                                    <td>@user.Email</td>
+                                    <td>@user.HiredDate</td>
+                                    <td>@user.Id</td>
+                                </tr>
+                                <tr id="details-@user.Id" class="admin-user-collapse">
+                                    <td colspan="7">
+                                        <form method="post" asp-controller="Home" asp-action="AdminUpdateSecurityUser">
+                                            <div class="admin-input-row">
+                                                <input class="admin-user-input-details" type="text" name="FirstName" placeholder="First Name" value="@user.FirstName">
+                                                <input class="admin-user-input-details" type="text" name="LastName" placeholder="Last Name" value="@user.LastName">
+                                                <input class="admin-user-input-details" type="text" name="UserName" placeholder="Username" value="@user.UserName">
+                                                <input class="admin-user-input-details" type="email" name="Email" placeholder="Email" value="@user.Email">
+                                                <input type="hidden" name="Id" value="@user.Id">
+
+                                                <!-- Hidden input for Role -->
+                                                <input type="hidden" name="Role" value="@string.Join(", ", user.Roles)">
+
+                                                <button type="submit" class="btn action-button">Submit Changes</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No Security Users found.</p>
+                }
+            </div>
+        </details>
+    </div>
+
+
+    <!-- Cameras Section -->
+    <details>
+        <summary class="admin-summary"><h2>Cameras</h2></summary>
+        <div id="cameras-section">
+            <!-- Your Cameras content here -->
+            <p>Content</p>
+        </div>
+    </details>
+
+    <!-- Locations Section -->
+    <details>
+        <summary class="admin-summary"><h2>Locations</h2></summary>
+        <div id="locations-section">
+            <!-- Your Locations content here -->
+            <p>Content</p>
+        </div>
+    </details>
+
+    <!-- Prioritized Messaging Section -->
+    <details>
+        <summary class="admin-summary"><h2>Prioritized Messaging</h2></summary>
+        <div id="prioritized-messaging-section">
+            <!-- Your Prioritized Messaging content here -->
+            <p>Content</p>
+        </div>
+    </details>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Initially collapse all rows
+        const detailRows = document.querySelectorAll(".admin-user-collapse");
+        detailRows.forEach(row => {
+            row.style.display = 'none';
+        });
+
+        // Add click event listener to toggle collapse
+        const rows = document.querySelectorAll(".clickable-row");
+        rows.forEach(row => {
+            row.addEventListener("click", function () {
+                const targetId = this.getAttribute("data-target").substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement.style.display === 'none' || targetElement.style.display === '') {
+                    targetElement.style.display = 'table-row';
+                } else {
+                    targetElement.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
