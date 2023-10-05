@@ -61,25 +61,10 @@ namespace NeoCorpSec.Controllers
         }
 
 
-
         [HttpGet]
         public async Task<IActionResult> CameraList()
         {
             string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
-            Dictionary<int, Tuple<string, string>> locationMap = new Dictionary<int, Tuple<string, string>>()
-            {
-                {1, Tuple.Create("Attleboro", "Massachusetts")},
-                {2, Tuple.Create("Framingham", "Massachusetts")},
-                {3, Tuple.Create("Sheffield", "Massachusetts")},
-                {4, Tuple.Create("Dracut", "Massachusetts")},
-                {5, Tuple.Create("Pawtucket", "Rhode Island")},
-                {6, Tuple.Create("Central Falls", "Rhode Island")},
-                {7, Tuple.Create("Thorndike", "Maine")},
-                {8, Tuple.Create("Greenville Junction", "Maine")},
-                {9, Tuple.Create("Woodbury", "New Jersey")},
-                {13, Tuple.Create("Polaris", "Andromeda")}
-            };
-            ViewBag.LocationMap = locationMap;
             using (var httpClient = InitializeHttpClient())
             {
                 // Fetch Cameras
@@ -121,7 +106,7 @@ namespace NeoCorpSec.Controllers
                 if (cameraResponse.IsSuccessStatusCode && locationResponse.IsSuccessStatusCode && noteResponse.IsSuccessStatusCode)
                 {
                     // Map LocationId to Location objects
-                    ViewBag.LocationMap = locations.ToDictionary(l => l.ID); // O(N)
+                    ViewBag.LocationMap = locations.ToDictionary(l => l.ID, l => l);
 
                     // Group notes by CameraId
                     var cameraSpecificNotes = notes.Where(n => n.NoteableType == "Camera")
@@ -241,6 +226,44 @@ namespace NeoCorpSec.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> AddNewCamera(Camera newCamera)
+        {
+            try
+            {
+                // Initialize HTTP client and base URL
+                string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+                newCamera.ModifiedAt = DateTime.UtcNow;
+                using (var httpClient = InitializeHttpClient())
+                {
+                    // Serialize the newCamera object to JSON and prepare HTTP content
+                    var json = JsonConvert.SerializeObject(newCamera);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // Make the POST request
+                    var response = await httpClient.PostAsync($"{baseUrl}/api/Camera", content);
+
+                    // Handle response
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = $"Camera '{newCamera.Name}' has been added successfully.";
+                        return RedirectToAction("Admin");
+                    }
+                    else
+                    {
+                        _logger.LogError($"Error adding new camera: {await response.Content.ReadAsStringAsync()}");
+                        TempData["ErrorMessage"] = $"Failed to add new camera.";
+                        return View("Error", new { message = $"Error: {response.StatusCode}, {response.ReasonPhrase}" });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception occurred: {ex.Message}");
+                TempData["ErrorMessage"] = $"An exception occurred while adding new camera.";
+                return View("Error", new { message = $"An exception occurred: {ex.Message}" });
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> EditCameraCurrentStatus(int cameraId, string newStatus)
@@ -302,8 +325,6 @@ namespace NeoCorpSec.Controllers
             }
         }
 
-
-
         public IActionResult Reports()
         {
             return View();
@@ -316,28 +337,38 @@ namespace NeoCorpSec.Controllers
 
         public async Task<IActionResult> Admin()
         {
+            // Initialize variables
             string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+            var securityUserOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            List<AdminCombinedSecurityUser> securityUsers = new List<AdminCombinedSecurityUser>();
+            List<Location> locations = new List<Location>();
+
             using (var httpClient = InitializeHttpClient())
             {
-                // Fetch Security Users
+                // Fetch Security Users and Locations
                 var securityUserResponse = await httpClient.GetAsync($"{baseUrl}/api/Auth/get-security-users");
+                var locationResponse = await httpClient.GetAsync($"{baseUrl}/api/Location");
 
-                var securityUserOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                // Handle Location data
+                if (locationResponse.IsSuccessStatusCode)
+                {
+                    var locationContent = await locationResponse.Content.ReadAsStringAsync();
+                    locations = JsonSerializer.Deserialize<List<Location>>(locationContent, securityUserOptions);
+                }
+                ViewBag.Locations = locations;
 
-                List<AdminCombinedSecurityUser> securityUsers = new List<AdminCombinedSecurityUser>();
-
+                // Handle Security User data
                 if (securityUserResponse.IsSuccessStatusCode)
                 {
-                    // Handle Security User data
                     var securityUserContent = await securityUserResponse.Content.ReadAsStringAsync();
                     securityUsers = JsonSerializer.Deserialize<List<AdminCombinedSecurityUser>>(securityUserContent, securityUserOptions);
 
-                    // Sort the list by the first role in each user's role list
+                    // Sort by the first role in each user's role list
                     securityUsers = securityUsers.OrderBy(u => u.Roles.FirstOrDefault()).ToList();
                 }
-
-                return View("Admin", securityUsers); // Return the sorted list to the Admin View
             }
+
+            return View("Admin", securityUsers);  // Return the sorted list to the Admin View
         }
 
         [HttpPost]
@@ -374,6 +405,44 @@ namespace NeoCorpSec.Controllers
             {
                 _logger.LogError($"Exception occurred: {ex.Message}");
                 TempData["ErrorMessage"] = $"An exception occurred while updating {updatedUser.UserName}.";
+                return View("Error", new { message = $"An exception occurred: {ex.Message}" });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddNewLocation(Location newLocation)
+        {
+            try
+            {
+                // Initialize HTTP client and base URL
+                string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+                using (var httpClient = InitializeHttpClient())
+                {
+                    // Serialize the newLocation object to JSON and prepare HTTP content
+                    var json = JsonConvert.SerializeObject(newLocation);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // Make the POST request
+                    var response = await httpClient.PostAsync($"{baseUrl}/api/Location", content);
+
+                    // Handle response
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = $"Location '{newLocation.Name}' has been added successfully.";
+                        return RedirectToAction("Admin");
+                    }
+                    else
+                    {
+                        _logger.LogError($"Error adding new location: {await response.Content.ReadAsStringAsync()}");
+                        TempData["ErrorMessage"] = $"Failed to add new location.";
+                        return View("Error", new { message = $"Error: {response.StatusCode}, {response.ReasonPhrase}" });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception occurred: {ex.Message}");
+                TempData["ErrorMessage"] = $"An exception occurred while adding new location.";
                 return View("Error", new { message = $"An exception occurred: {ex.Message}" });
             }
         }

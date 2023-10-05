@@ -53,9 +53,9 @@
                         <h4 class="location-list-header" style="display:inline;">
                             @{
                                 var locationId = cameraGroup.Key;
-                                if (locationMap.ContainsKey(locationId)) // O(1)
+                                if (ViewBag.LocationMap.ContainsKey(locationId)) // O(1)
                                 {
-                                    var location = locationMap[locationId];
+                                    var location = ViewBag.LocationMap[locationId];
                                     @:@location.City, @location.State
                                 }
                                 else
@@ -68,9 +68,9 @@
                     <div>
                         <h4 class="location-list-address" style="display:inline;">
                             @{
-                                if (locationMap.ContainsKey(locationId)) // O(1), reusing locationId
+                                if (ViewBag.LocationMap.ContainsKey(locationId)) // O(1), reusing locationId
                                 {
-                                    var location = locationMap[locationId];
+                                    var location = ViewBag.locationMap[locationId];
                                     @:@location.Name, @location.City, @location.State
                                 }
                                 else

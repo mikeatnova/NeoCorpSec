@@ -27,7 +27,7 @@
                 <div class="dropdown" id="custom-dropdown-@Model.ID">
                     <button class="dropbtn" id="dropbtn-@Model.ID">▼</button>
                     <div class="dropdown-content" id="dropdown-content-@Model.ID">
-                        @foreach (var status in new string[] { "Up", "Issues", "Down", "Decommissioned", "Unboxed" })
+                        @foreach (var status in new string[] { "Up", "Issues", "Down"})
                         {
                             <form method="post" asp-action="EditCameraCurrentStatus" asp-controller="Home">
                                 <input type="hidden" name="cameraId" value="@Model.ID" />
