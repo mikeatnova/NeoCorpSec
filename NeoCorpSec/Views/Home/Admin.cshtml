@@ -26,7 +26,7 @@
 
     <div class="container">
         <!-- Users Section -->
-        <details open>
+        <details>
             <summary class="admin-summary"><h2>Users</h2></summary>
             <div id="users-section">
                 @if (Model != null && Model.Count > 0)
@@ -55,21 +55,31 @@
                                     <td>@user.HiredDate</td>
                                     <td>@user.Id</td>
                                 </tr>
-                                <tr id="details-@user.Id" class="admin-user-collapse">
+
+                                <tr id="details-@user.Id" class="admin-user-collapse add admin-section-container">
                                     <td colspan="7">
+                                        <h3 class="admin-section-header">Edit User</h3>
                                         <form method="post" asp-controller="Home" asp-action="AdminUpdateSecurityUser">
-                                            <div class="admin-input-row">
-                                                <input class="admin-user-input-details" type="text" name="FirstName" placeholder="First Name" value="@user.FirstName">
-                                                <input class="admin-user-input-details" type="text" name="LastName" placeholder="Last Name" value="@user.LastName">
-                                                <input class="admin-user-input-details" type="text" name="UserName" placeholder="Username" value="@user.UserName">
-                                                <input class="admin-user-input-details" type="email" name="Email" placeholder="Email" value="@user.Email">
-                                                <input type="hidden" name="Id" value="@user.Id">
-
-                                                <!-- Hidden input for Role -->
-                                                <input type="hidden" name="Role" value="@string.Join(", ", user.Roles)">
-
-                                                <button type="submit" class="btn action-button">Submit Changes</button>
+                                            <div class="form-group">
+                                                <label for="FirstName">First Name:</label>
+                                                <input class="admin-user-input-details form-control" type="text" id="FirstName" name="FirstName" placeholder="First Name" value="@user.FirstName">
                                             </div>
+                                            <div class="form-group">
+                                                <label for="LastName">Last Name:</label>
+                                                <input class="admin-user-input-details form-control" type="text" id="LastName" name="LastName" placeholder="Last Name" value="@user.LastName">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="UserName">Username:</label>
+                                                <input class="admin-user-input-details form-control" type="text" id="UserName" name="UserName" placeholder="Username" value="@user.UserName">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Email">Email:</label>
+                                                <input class="admin-user-input-details form-control" type="email" id="Email" name="Email" placeholder="Email" value="@user.Email">
+                                            </div>
+                                            <input type="hidden" name="Id" value="@user.Id">
+                                            <!-- Hidden input for Role -->
+                                            <input type="hidden" name="Role" value="@string.Join(", ", user.Roles)">
+                                            <button type="submit" class="btn btn-primary">Submit Changes</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -84,35 +94,98 @@
                 }
             </div>
         </details>
+
+        <!-- Cameras Section -->
+        <details>
+            <summary class="admin-summary"><h2>Cameras</h2></summary>
+            <div id="cameras-section">
+                <!-- Add Camera -->
+                <div id="add-camera-container" class="add admin-section-container">
+                    <h3 class="admin-section-header">Add Camera</h3>
+                    <!-- Your Cameras content here -->
+                    <form method="post" asp-controller="Home" asp-action="AddNewCamera">
+                        <div class="form-group">
+                            <label for="Name">Camera Name:</label>
+                            <input type="text" id="Name" name="Name" class="form-control" required maxlength="100" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="LocationId">Location:</label>
+                            <select id="LocationId" name="LocationId" class="form-control" required>
+                                <option value="">--Select Location--</option>
+                                @foreach (var location in ViewBag.Locations)
+                                {
+                                    <option value="@location.ID">@location.Name, @location.City, @location.State</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="CurrentStatus">Current Status:</label>
+                            <select id="CurrentStatus" name="CurrentStatus" class="form-control" required>
+                                <option value="Up">Up</option>
+                                <option value="Issues">Issues</option>
+                                <option value="Down">Down</option>
+                                <option value="Decommissioned">Decommissioned</option>
+                                <option value="Unboxed" selected>Unboxed</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add Camera</button>
+                    </form>
+                </div>
+
+                <!-- Decommission Camera -->
+                <div id="decommission-camera-container" class="decommission admin-section-container">
+                    <h3 class="admin-section-header">Decommission Camera</h3>
+                    <form method="post" asp-controller="Home" asp-action="EditCameraCurrentStatus">
+                        <div class="form-group">
+                            <label for="cameraId">Camera ID:</label>
+                            <input type="number" id="cameraId" name="cameraId" placeholder="ex. '333', '127', '420'..." class="form-control" required />
+                        </div>
+                        <input type="hidden" name="newStatus" value="Decommissioned">
+                        <button type="submit" class="btn btn-danger">Decommission</button>
+                    </form>
+                </div>
+
+            </div>
+        </details>
+
+        <!-- Locations Section -->
+        <details>
+            <summary class="admin-summary"><h2>Locations</h2></summary>
+            <div id="locations-section">
+                <!-- Add Location -->
+                <div id="add-location-container" class="location admin-section-container">
+                    <h3 class="admin-section-header">Add Location</h3>
+                    <form method="post" asp-controller="Home" asp-action="AddNewLocation">
+                        <div class="form-group">
+                            <label for="Name">Location Address:</label>
+                            <input type="text" id="Name" name="Name" class="form-control" required maxlength="100" />
+                        </div>
+                        <div class="form-group">
+                            <label for="City">City:</label>
+                            <input type="text" id="City" name="City" class="form-control" required maxlength="50" />
+                        </div>
+                        <div class="form-group">
+                            <label for="State">State:</label>
+                            <input type="text" id="State" name="State" class="form-control" required maxlength="20" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Location</button>
+                    </form>
+                </div>
+            </div>
+        </details>
+
+        <!-- Prioritized Messaging Section -->
+        <details>
+            <summary class="admin-summary"><h2>Prioritized Messaging</h2></summary>
+            <div id="prioritized-messaging-section">
+                <!-- Your Prioritized Messaging content here -->
+                <p>Content</p>
+            </div>
+        </details>
     </div>
-
-
-    <!-- Cameras Section -->
-    <details>
-        <summary class="admin-summary"><h2>Cameras</h2></summary>
-        <div id="cameras-section">
-            <!-- Your Cameras content here -->
-            <p>Content</p>
-        </div>
-    </details>
-
-    <!-- Locations Section -->
-    <details>
-        <summary class="admin-summary"><h2>Locations</h2></summary>
-        <div id="locations-section">
-            <!-- Your Locations content here -->
-            <p>Content</p>
-        </div>
-    </details>
-
-    <!-- Prioritized Messaging Section -->
-    <details>
-        <summary class="admin-summary"><h2>Prioritized Messaging</h2></summary>
-        <div id="prioritized-messaging-section">
-            <!-- Your Prioritized Messaging content here -->
-            <p>Content</p>
-        </div>
-    </details>
 </div>
 
 <script>
