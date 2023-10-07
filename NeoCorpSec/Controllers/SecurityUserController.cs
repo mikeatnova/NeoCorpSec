@@ -1,6 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NeoCorpSec.Models.Authenitcation;
+using NeoCorpSec.Models.Messaging;
+using NeoCorpSec.Services;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
 
 namespace NeoCorpSec.Controllers
 {
@@ -8,11 +13,14 @@ namespace NeoCorpSec.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly JwtExtractorHelper _jwtExtractorHelper;
 
-        public SecurityUserController(IHttpClientFactory httpClientFactory, IConfiguration configuration) : base()
+
+        public SecurityUserController(IHttpClientFactory httpClientFactory, IConfiguration configuration, JwtExtractorHelper jwtExtractorHelper) : base()
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _jwtExtractorHelper = jwtExtractorHelper;
         }
 
         public IActionResult Index()
@@ -31,6 +39,59 @@ namespace NeoCorpSec.Controllers
         {
             return View();  // This returns the Login.cshtml view
         }
+
+        [HttpPost]
+        public async Task<IActionResult> SendPalantirMessage(PalantirMessage newMessage)
+        {
+            try
+            {
+                // Extract user claims
+                var claims = _jwtExtractorHelper.GetClaimsFromJwt();
+                if (claims == null)
+                {
+                    TempData["ErrorMessage"] = "Claims are null.";
+                    return RedirectToAction("Profile");
+                }
+                string username = claims.FindFirst(ClaimTypes.Name)?.Value;
+
+                // Set Realm and Username
+                newMessage.Realm = "CorpSec";
+                newMessage.Status = "Unread";
+                newMessage.Username = username;
+
+                // Initialize HttpClient
+                using (var httpClient = InitializeHttpClient())
+                {
+                    string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+
+                    // Serialize the newMessage object to JSON and prepare HTTP content
+                    var json = JsonSerializer.Serialize(newMessage);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // Make the POST request
+                    var response = await httpClient.PostAsync($"{baseUrl}/api/PalantirMessages", content);
+
+                    // Handle response
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = "Palantir message sent successfully.";
+                        return RedirectToAction("Profile");
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = $"Error: {response.StatusCode}, {response.ReasonPhrase}";
+                        return RedirectToAction("Profile");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An exception occurred: {ex.Message}";
+                return RedirectToAction("Profile");
+            }
+        }
+
+
 
         [HttpPost]
         [AllowAnonymous]
