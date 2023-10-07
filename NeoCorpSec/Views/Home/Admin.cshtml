@@ -1,11 +1,15 @@
-﻿@{
+﻿@using System.Text.RegularExpressions;
+@{
     ViewData["Title"] = "Admin Page";
-    var sortedModel = Model.OrderBy(u => u.Roles.FirstOrDefault()).ToList();
+    var roleOrder = new List<string> { "SecurityChief", "SecurityManager", "SecuritySupervisor", "SecurityOfficer" };
+    var sortedModel = Model.OrderBy(user => roleOrder.IndexOf(user.Roles.First())).ToList();
     var successMessage = TempData["SuccessMessage"] as string;
     var errorMessage = TempData["ErrorMessage"] as string;
+    int counter = 1;
 }
 
 @model List<NeoCorpSec.Models.Authenitcation.AdminCombinedSecurityUser>
+
 
 @if (!string.IsNullOrEmpty(successMessage))
 {
@@ -21,41 +25,54 @@
     </div>
 }
 
+
+
 <div>
     <h1 class="display-4 text-center">Admin Page</h1>
+    @if (TempData["StatusType"] != null && TempData["StatusType"].ToString() == "danger")
+    {
+        <div class="alert alert-danger" role="alert">
+            @TempData["StatusMessage"]
+        </div>
+    }
 
     <div class="container">
         <!-- Users Section -->
         <details>
-            <summary class="admin-summary"><h2>Users</h2></summary>
+            <summary class="admin-summary"><h2>Security Users</h2></summary>
+            <!-- List of Security Users -->
             <div id="users-section">
-                @if (Model != null && Model.Count > 0)
+                @if (sortedModel != null && sortedModel.Count > 0)
                 {
                     <table class="table text-light">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Role</th>
                                 <th>First Name</th>
                                 <th>Last Name</th>
                                 <th>Username</th>
                                 <th>Email</th>
+                                <th>Phone Number</th>
                                 <th>Hired Date</th>
                                 <th>ID</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var user in Model)
+                            @foreach (var user in sortedModel)
                             {
                                 <tr class="clickable-row" data-toggle="collapse" data-target="#details-@user.Id">
+                                    <td>@counter</td>
                                     <td>@string.Join(", ", user.Roles)</td>
                                     <td>@user.FirstName</td>
                                     <td>@user.LastName</td>
                                     <td>@user.UserName</td>
                                     <td>@user.Email</td>
-                                    <td>@user.HiredDate</td>
+                                    <td>@user.PhoneNumber</td>
+                                    <td>@ConvertToEasternTime(user.HiredDate)</td>
                                     <td>@user.Id</td>
                                 </tr>
-
+                                counter++;
                                 <tr id="details-@user.Id" class="admin-user-collapse add admin-section-container">
                                     <td colspan="7">
                                         <h3 class="admin-section-header">Edit User</h3>
@@ -76,6 +93,14 @@
                                                 <label for="Email">Email:</label>
                                                 <input class="admin-user-input-details form-control" type="email" id="Email" name="Email" placeholder="Email" value="@user.Email">
                                             </div>
+                                            <div class="form-group">
+                                                <label for="PhoneNumber">Phone Number:</label>
+                                                <input class="admin-user-input-details form-control" type="text" id="PhoneNumber" name="PhoneNumber" placeholder="Phone Number" value="@user.PhoneNumber">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="HiredDate">Hired Date:</label>
+                                                <input type="date" id="HiredDate" name="HiredDate" class="form-control" />
+                                            </div>
                                             <input type="hidden" name="Id" value="@user.Id">
                                             <!-- Hidden input for Role -->
                                             <input type="hidden" name="Role" value="@string.Join(", ", user.Roles)">
@@ -92,6 +117,67 @@
                 {
                     <p>No Security Users found.</p>
                 }
+            </div>
+
+            <!-- Add Security User -->
+            <div id="add-security-user-container" class="security-user admin-section-container">
+                <h3 class="admin-section-header">Add Security User</h3>
+                <form method="post" asp-controller="Home" asp-action="AddNewSecurityUser">
+                    <div class="form-group">
+                        <label for="FirstName">First Name:</label>
+                        <input type="text" id="FirstName" name="FirstName" placeholder="e.g. Neo" class="form-control" required maxlength="50" />
+                    </div>
+                    <div class="form-group">
+                        <label for="LastName">Last Name:</label>
+                        <input type="text" id="LastName" name="LastName" placeholder="e.g. Anderson" class="form-control" required maxlength="50" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Email">Email:</label>
+                        <input type="email" id="Email" name="Email" placeholder="e.g. nanderson@zion.com" class="form-control" />
+                    </div>
+                    <div>
+                        <label>Role</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="Role" id="SecurityOfficer" value="SecurityOfficer">
+                                <label class="form-check-label" for="SecurityOfficer">
+                                    Security Officer
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="Role" id="SecuritySupervisor" value="SecuritySupervisor">
+                                <label class="form-check-label" for="SecuritySupervisor">
+                                    Security Supervisor
+                                </label>
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="Role" id="SecurityManager" value="SecurityManager">
+                                <label class="form-check-label" for="SecurityManager">
+                                    Security Manager
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="Password">Password:</label>
+                        <input type="password" id="Password" name="Password" placeholder="6+ characters, one uppercase, one lowercase, one number, and one special character." class="form-control" required minlength="6" />
+                    </div>
+                    <div class="form-group">
+                        <label for="retypePassword">Retype Password</label>
+                        <input type="password" id="retypePassword" name="RetypePassword" placeholder="Match the password" class="form-control" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="HiredDate">Hired Date:</label>
+                        <input type="date" id="HiredDate" name="HiredDate" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="PhoneNumber">Phone Number:</label>
+                        <input type="tel" id="PhoneNumber" name="PhoneNumber" placeholder="e.g. 012 345 6789" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Security User</button>
+                </form>
             </div>
         </details>
 
@@ -141,7 +227,7 @@
                     <form method="post" asp-controller="Home" asp-action="EditCameraCurrentStatus">
                         <div class="form-group">
                             <label for="cameraId">Camera ID:</label>
-                            <input type="number" id="cameraId" name="cameraId" placeholder="ex. '333', '127', '420'..." class="form-control" required />
+                            <input type="number" id="cameraId" name="cameraId" placeholder="e.g. '333', '127', '420'..." class="form-control" required />
                         </div>
                         <input type="hidden" name="newStatus" value="Decommissioned">
                         <button type="submit" class="btn btn-danger">Decommission</button>
@@ -187,6 +273,21 @@
         </details>
     </div>
 </div>
+
+@functions {
+    public static string ConvertToEasternTime(string dateTimeString)
+    {
+        DateTime utcDateTime;
+        if (DateTime.TryParse(dateTimeString, out utcDateTime))
+        {
+            TimeZoneInfo easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            DateTime easternTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, easternZone);
+            return easternTime.ToString("MM.dd.yyyy"); // Only the date
+        }
+        return dateTimeString;
+    }
+}
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

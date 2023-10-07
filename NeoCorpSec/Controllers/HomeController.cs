@@ -14,6 +14,7 @@ using NeoCorpSec.Models.CameraManagement;
 using NeoCorpSec.Models.Authenitcation;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Net.Http.Headers;
 
 namespace NeoCorpSec.Controllers
 {
@@ -370,6 +371,65 @@ namespace NeoCorpSec.Controllers
 
             return View("Admin", securityUsers);  // Return the sorted list to the Admin View
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddNewSecurityUser(AdminAddSecurityUser seedUser, string password, string retypePassword)
+        {
+            if (password != retypePassword)
+            {
+                TempData["StatusType"] = "danger";
+                TempData["StatusMessage"] = $"Passwords do not match, {ViewBag.Username}.";
+                return RedirectToAction("Admin");
+            }
+            try
+            {
+                // Extract user claims
+                var claims = _jwtExtractorHelper.GetClaimsFromJwt();
+                if (claims == null)
+                {
+                    return View("Error", new { message = "Claims are null" });
+                }
+
+                string identityUserId = claims?.FindFirst("sub")?.Value ?? string.Empty;
+                string username = claims.FindFirst(ClaimTypes.Name)?.Value;
+
+                if (string.IsNullOrEmpty(identityUserId) || string.IsNullOrEmpty(username))
+                {
+                    return View("Error", new { message = "User identity is not valid" });
+                }
+
+                // Initialize HttpClient
+                using (var httpClient = InitializeHttpClient())
+                {
+                    string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+
+                    // Log the object being sent
+                    _logger.LogInformation($"Sending Security User Object: {JsonSerializer.Serialize(seedUser)}");
+
+                    var json = JsonSerializer.Serialize(seedUser);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+                    var response = await httpClient.PostAsync($"{baseUrl}/api/Auth/seed-new-security-user", content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        TempData["SuccessMessage"] = $"Security User was successfully created with role {seedUser.Role}";
+                        return RedirectToAction("Admin"); // Assuming you have a SecurityUserList action
+                    }
+                    else
+                    {
+                        TempData["FailureMessage"] = $"Failed to create Security User with role {seedUser.Role}";
+                        return View("Error", new { message = $"Error: {response.StatusCode}, {response.ReasonPhrase}" });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["FailureMessage"] = $"An exception occurred while creating Security User with role {seedUser.Role}";
+                return View("Error", new { message = $"An exception occurred: {ex.Message}" });
+            }
+        }
+
+
 
         [HttpPost]
         public async Task<IActionResult> AdminUpdateSecurityUser(UpdateSecurityUserDto updatedUser)
