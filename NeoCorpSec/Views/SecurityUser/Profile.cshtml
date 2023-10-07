@@ -1,9 +1,49 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model NeoCorpSec.Models.Messaging.PalantirMessage
 
-<div>
-    <p>This is the Profile Page</p>
+<div class="container">
+    <div>
+        <p>This is the Profile Page</p>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+
+
+    <form method="post" asp-controller="SecurityUser" asp-action="SendPalantirMessage">
+        <div>
+            <p>Send a message to the developer</p>
+        </div>
+        <div class="form-group">
+            <label for="Title">Title</label>
+            <input type="text" class="form-control" id="Title" name="Title" required />
+        </div>
+        <div class="form-group">
+            <label for="MessageBody">Message Body</label>
+            <textarea class="form-control" id="MessageBody" name="MessageBody" rows="3" required></textarea>
+        </div>
+        <div>
+            <label>Urgency Rating</label>
+            @for (int i = 1; i <= 5; i++)
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="UrgencyRating" id="UrgencyRating@(i)" value="@i" required />
+                    <label class="form-check-label" for="UrgencyRating@(i)">
+                        @i
+                    </label>
+                </div>
+            }
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
 </div>
