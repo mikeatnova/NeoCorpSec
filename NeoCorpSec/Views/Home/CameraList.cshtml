@@ -49,7 +49,9 @@
         {
             <details class="camera-list-details">
                 <summary class="location-list-summery">
-                    <div>
+
+                    <!-- section 1 -->
+                    <div class="nameaddress-block">
                         <h4 class="location-list-header" style="display:inline;">
                             @{
                                 var locationId = cameraGroup.Key;
@@ -65,25 +67,41 @@
                             }
                         </h4>
                         <span class="camera-count">(@cameraGroup.Count())</span>
-                    <div>
-                        <h4 class="location-list-address" style="display:inline;">
-                            @{
-                                if (ViewBag.LocationMap.ContainsKey(locationId)) // O(1), reusing locationId
-                                {
-                                    var location = ViewBag.locationMap[locationId];
-                                    @:@location.Name, @location.City, @location.State
+                        <div>
+                            <h4 class="location-list-address" style="display:inline;">
+                                @{
+                                    if (ViewBag.LocationMap.ContainsKey(locationId)) // O(1), reusing locationId
+                                    {
+                                        var location = ViewBag.locationMap[locationId];
+                                        @:@location.Name, @location.City, @location.State
+                                    }
+                                    else
+                                    {
+                                        @:Unknown Location
+                                    }
                                 }
-                                else
-                                {
-                                    @:Unknown Location
-                                }
+                            </h4>
+                        </div>
+                    </div>
+
+                    <!-- section 2 -->
+                    <span class="alarmdate-block">
+                        @{
+                            if (ViewBag.LocationMap.ContainsKey(locationId)) // O(1), reusing locationId
+                            {
+                                var location = ViewBag.LocationMap[locationId];
+                                var remainingDays = (location.NextCheckDate - DateTime.UtcNow).Days;
+                                @:Next 30 day check: @remainingDays days remaining*
                             }
-                        </h4>
-                    </div>
-                    </div>
+                            else
+                            {
+                                @:Unknown Location
+                            }
+                        }
+                    </span>
 
 
-
+                    <!-- section 3 -->
                     <span class="status-block">
                         @{
                             string[] statuses = new[] { "Up", "Issues", "Down", "Decommissioned", "Unboxed" };
@@ -106,7 +124,29 @@
                             }
                         }
                     </span>
+
                 </summary>
+                <!-- 30 day reset button -->
+                <span class="alarmdate-block">
+                    @{
+                        if (ViewBag.LocationMap.ContainsKey(locationId)) // O(1), reusing locationId
+                        {
+                            var location = ViewBag.LocationMap[locationId];
+                            var remainingDays = (location.NextCheckDate - DateTime.UtcNow).Days;
+                            <span>#@(location.ID)</span>
+                            <form method="post" asp-action="ResetThirtyDay" asp-controller="Home">
+                                <input type="hidden" name="locationId" value="@locationId" />
+                                <button type="submit" class="btn btn-primary reset-thirtyday-btn" style="width: 100%; text-align: center;">
+                                    Reset here by @(location?.NextCheckDate.DayOfWeek.ToString() ?? "Unknown Day"), @(location?.NextCheckDate.ToString("MMMM dd yyyy") ?? "Unknown Date") to remain compliant*
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            @:Unknown Location
+                        }
+                    }
+                </span>
                 <div class="camera-partial">
                     @foreach (var camera in cameraGroup) // O(N)
                     {

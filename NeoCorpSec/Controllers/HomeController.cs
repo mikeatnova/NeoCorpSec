@@ -87,7 +87,6 @@ namespace NeoCorpSec.Controllers
             }
         }
 
-
         [HttpGet]
         public async Task<IActionResult> CameraList()
         {
@@ -578,6 +577,75 @@ namespace NeoCorpSec.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ResetThirtyDay(int locationId)
+        {
+            try
+            {
+                // Initialize HTTP client and base URL
+                string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+                using (var httpClient = InitializeHttpClient())
+                {
+                    // Make the GET request to fetch existing location
+                    var response = await httpClient.GetAsync($"{baseUrl}/api/Location/{locationId}");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var locationJson = await response.Content.ReadAsStringAsync();
+                        var location = JsonConvert.DeserializeObject<Location>(locationJson);
+
+                        // Update the NextCheckDate
+                        location.NextCheckDate = DateTime.UtcNow.AddDays(30);
+
+                        // Serialize the updated location object to JSON and prepare HTTP content
+                        var json = JsonConvert.SerializeObject(location);
+                        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                        // Make the PUT request to update the location
+                        var updateResponse = await httpClient.PutAsync($"{baseUrl}/api/Location/{locationId}", content);
+
+                        if (updateResponse.IsSuccessStatusCode)
+                        {
+                            // Prepare the Activity Log with the CurrentActivityLog from CoreController
+                            var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"completed the 30 day check for Location #{location.ID} in {location.City}, {location.State}.");
+
+                            // Log the prepared Activity Log
+                            var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
+                            var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
+                            if (logResponse.IsSuccessStatusCode)
+                            {
+                                TempData["SuccessMessage"] = $"Next check date for location '{location.Name}' has been reset successfully.";
+                                return RedirectToAction("CameraList");
+                            }
+                            else
+                            {
+                                var logErrorContent = await logResponse.Content.ReadAsStringAsync();
+                                TempData["ApiLogError"] = $"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}";
+                                return RedirectToAction("CameraList");
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogError($"Error updating next check date: {await updateResponse.Content.ReadAsStringAsync()}");
+                            TempData["ErrorMessage"] = $"Failed to update next check date.";
+                            return View("Error", new { message = $"Error: {updateResponse.StatusCode}, {updateResponse.ReasonPhrase}" });
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogError($"Error fetching location: {await response.Content.ReadAsStringAsync()}");
+                        TempData["ErrorMessage"] = $"Failed to fetch location.";
+                        return View("Error", new { message = $"Error: {response.StatusCode}, {response.ReasonPhrase}" });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception occurred: {ex.Message}");
+                TempData["ErrorMessage"] = $"An exception occurred while resetting next check date.";
+                return View("Error", new { message = $"An exception occurred: {ex.Message}" });
+            }
+        }
 
         [AllowAnonymous]
         public IActionResult Privacy()
