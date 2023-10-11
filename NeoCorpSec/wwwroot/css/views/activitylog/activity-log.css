@@ -1,0 +1,32 @@
+﻿/* Remove border and background for the activity log container and items */
+.activity-log-container,
+.activity-log-list,
+.activity-log-item {
+    border: none;
+    background: none;
+    color: white;
+    font-size: 1rem;
+}
+
+.activity-log-name {
+    font-size: 1.2rem;
+    margin-right: .75rem;
+}
+    .activity-log-name:hover,
+    .activity-log-time:hover{
+        font-weight: bold;
+    }
+
+.activity-log-details {
+    font-family:  monospace;
+}
+
+.activity-log-split {
+    margin: 0 1rem; 
+}
+
+.activity-log-split,
+.activity-log-time {
+    color: #4e4e4e;
+    margin-left: auto;
+}

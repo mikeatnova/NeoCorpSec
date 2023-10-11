@@ -37,6 +37,5 @@ namespace NeoCorpSec.Models.Reporting
 
         [Required]
         public int NoteableId { get; set; } // e.g., CameraId, TourId, ShiftId
-
     }
 }   

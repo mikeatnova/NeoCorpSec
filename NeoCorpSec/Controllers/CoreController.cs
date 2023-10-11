@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using NeoCorpSec.Models.Reporting;
 
 namespace NeoCorpSec.Controllers
 {
     public class CoreController : Controller
     {
+        public ActivityLog CurrentActivityLog { get; set; } = new ActivityLog();
+
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var claims = HttpContext.Items["UserClaims"] as ClaimsPrincipal;
@@ -17,6 +20,16 @@ namespace NeoCorpSec.Controllers
                 ViewBag.Username = claims.FindFirst(ClaimTypes.Name)?.Value;
                 ViewBag.Email = claims.FindFirst(ClaimTypes.Email)?.Value;
                 ViewBag.UserId = claims.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                ViewBag.FirstName = claims.FindFirst("FirstName")?.Value;
+                ViewBag.LastName = claims.FindFirst("LastName")?.Value;
+
+                // Populate ActivityLog fields
+                CurrentActivityLog.IdentityUserId = ViewBag.UserId;
+                CurrentActivityLog.UserName = ViewBag.Username;
+                CurrentActivityLog.UserRole = ViewBag.Role;
+                CurrentActivityLog.FirstName = ViewBag.FirstName;
+                CurrentActivityLog.LastName = ViewBag.LastName;
+                // You can add additional fields here if your JWT contains them, like FirstName and LastName
             }
 
             bool isAuthenticated = IsUserAuthenticated();
@@ -30,7 +43,6 @@ namespace NeoCorpSec.Controllers
 
             base.OnActionExecuting(context);
         }
-
 
         public bool IsUserAuthenticated()
         {
