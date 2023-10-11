@@ -22,6 +22,7 @@ namespace NeoCorpSec.Controllers
                 ViewBag.UserId = claims.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
                 ViewBag.FirstName = claims.FindFirst("FirstName")?.Value;
                 ViewBag.LastName = claims.FindFirst("LastName")?.Value;
+                ViewBag.SecurityUsername = claims.FindFirst("SecurityUsername")?.Value;
 
                 // Populate ActivityLog fields
                 CurrentActivityLog.IdentityUserId = ViewBag.UserId;
@@ -29,7 +30,6 @@ namespace NeoCorpSec.Controllers
                 CurrentActivityLog.UserRole = ViewBag.Role;
                 CurrentActivityLog.FirstName = ViewBag.FirstName;
                 CurrentActivityLog.LastName = ViewBag.LastName;
-                // You can add additional fields here if your JWT contains them, like FirstName and LastName
             }
 
             bool isAuthenticated = IsUserAuthenticated();

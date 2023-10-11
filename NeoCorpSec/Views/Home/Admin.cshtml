@@ -78,7 +78,7 @@
                                     <th>Role</th>
                                     <th>First Name</th>
                                     <th>Last Name</th>
-                                    <th>Username</th>
+                                    <th>Security Username</th>
                                     <th>Email</th>
                                     <th>Phone Number</th>
                                     <th>Hired Date</th>
@@ -93,7 +93,7 @@
                                         <td>@string.Join(", ", user.Roles)</td>
                                         <td>@user.FirstName</td>
                                         <td>@user.LastName</td>
-                                        <td>@user.UserName</td>
+                                        <td>@user.SecurityUsername</td>
                                         <td>@user.Email</td>
                                         <td>@user.PhoneNumber</td>
                                         <td>@ConvertToEasternTime(user.HiredDate)</td>
@@ -112,9 +112,9 @@
                                                     <label for="LastName">Last Name:</label>
                                                     <input class="admin-user-input-details form-control" type="text" id="LastName" name="LastName" placeholder="Last Name" value="@user.LastName">
                                                 </div>
-                                                <div class="form-group">
-                                                    <label for="UserName">Username:</label>
-                                                    <input class="admin-user-input-details form-control" type="text" id="UserName" name="UserName" placeholder="Username" value="@user.UserName">
+                                                    <div class="form-group">
+                                                    <label for="Security Username">Security Username:</label>
+                                                        <input class="admin-user-input-details form-control"  type="text" id="SecurityUsername" name="SecurityUsername" placeholder="Security Username" value="@user.SecurityUsername">
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="Email">Email:</label>

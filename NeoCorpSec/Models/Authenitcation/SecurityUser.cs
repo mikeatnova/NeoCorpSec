@@ -16,6 +16,9 @@ namespace NeoCorpSec.Models.Authenitcation
 
         [MaxLength(50)]
         public string? LastName { get; set; }
+        
+        [MaxLength(50)]
+        public string? SecurityUsername { get; set; }
 
         [Required]
         public bool IsActive { get; set; }

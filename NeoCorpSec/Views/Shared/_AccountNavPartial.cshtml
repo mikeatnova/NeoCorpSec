@@ -12,7 +12,7 @@
         {
             <div class="account-button-wrapper">
                 <a class="btn btn-link account-button" asp-controller="SecurityUser" asp-action="Profile">
-                    <i class="fas fa-user"></i><span class="username-space">@ViewBag.Username</span>
+                    <i class="fas fa-user" title="@ViewBag.Username"></i><span class="username-space" title="@ViewBag.Username">@(ViewBag.SecurityUsername ?? ViewBag.Username)</span>
                 </a>
             </div>
         }

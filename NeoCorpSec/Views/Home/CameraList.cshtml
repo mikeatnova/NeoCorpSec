@@ -91,7 +91,7 @@
                             {
                                 var location = ViewBag.LocationMap[locationId];
                                 var remainingDays = (location.NextCheckDate - DateTime.UtcNow).Days;
-                                @:Next 30 day check: @remainingDays days remaining*
+                                @:Next Location Camera check in @remainingDays days
                             }
                             else
                             {
@@ -136,8 +136,8 @@
                             <span>#@(location.ID)</span>
                             <form method="post" asp-action="ResetThirtyDay" asp-controller="Home">
                                 <input type="hidden" name="locationId" value="@locationId" />
-                                <button type="submit" class="btn btn-primary reset-thirtyday-btn" style="width: 100%; text-align: center;">
-                                    Reset here by @(location?.NextCheckDate.DayOfWeek.ToString() ?? "Unknown Day"), @(location?.NextCheckDate.ToString("MMMM dd yyyy") ?? "Unknown Date") to remain compliant*
+                                <button type="submit" class="btn btn-primary reset-thirtyday-btn" style="width: 100%; text-align: center;" onclick="return confirm('This will reset the 30Day timer. Proceed?');">
+                                    Reset here by @(location?.NextCheckDate.DayOfWeek.ToString() ?? "Unknown Day"), @(location?.NextCheckDate.ToString("MMMM dd yyyy") ?? "Unknown Date") to remain compliant
                                 </button>
                             </form>
                         }

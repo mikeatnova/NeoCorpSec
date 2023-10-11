@@ -1,7 +1,14 @@
-﻿@model NeoCorpSec.Models.Messaging.PalantirMessage
+﻿@using NeoCorpSec.Models.Authenitcation;
+@using NeoCorpSec.Models.Messaging;
+
+@{
+    var securityUser = ViewBag.SecurityUser as AdminCombinedSecurityUser;
+    var palantirMessage = ViewBag.PalantirMessage as PalantirMessage;
+}
 
 <div class="container">
     <h1 class="display-4 text-center">Profile Page</h1>
+    <h2>@securityUser.UserName .:: @securityUser.FirstName @securityUser.LastName ::. </h2>
 
     @if (TempData["SuccessMessage"] != null)
     {
@@ -25,11 +32,67 @@
                 <a class="nav-link" id="feedback-tab" data-bs-toggle="tab" href="#feedback" role="tab">Feedback</a>
             </li>
         </ul>
+
+
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="account" role="tabpanel">
                 <!-- Account Details -->
-                <p>Here is the Account Page</p>
+                <div id="user-section">
+                    <table class="table text-light">
+                        <thead>
+                            <tr>
+                                <th>Role</th>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Security Username</th>
+                                <th>Email</th>
+                                <th>Phone Number</th>
+                                <th>Hired Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="clickable-row" data-toggle="collapse" data-target="#details-@securityUser.Id">
+                                <td>@string.Join(", ", securityUser.Roles)</td>
+                                <td>@securityUser.FirstName</td>
+                                <td>@securityUser.LastName</td>
+                                <td>@securityUser.SecurityUsername</td>
+                                <td>@securityUser.Email</td>
+                                <td>@securityUser.PhoneNumber</td>
+                                <td>@ConvertToEasternTime(securityUser.HiredDate)</td>
+                            </tr>
+                            <tr id="details-@securityUser.Id" class="admin-user-collapse add admin-section-container">
+                                <td colspan="7">
+                                    <h3 class="admin-section-header">Edit Details</h3>
+                                    <form method="post" asp-controller="SecurityUser" asp-action="UpdateSecurityUser">
+                                        
+                                        <div class="form-group">
+                                            <label for="Security Username">Security Username:</label>
+                                            <input class="admin-user-input-details form-control" type="text" id="SecurityUsername" name="SecurityUsername" placeholder="Security Username" value="@securityUser.SecurityUsername">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="Email">Email:</label>
+                                            <input class="admin-user-input-details form-control" type="email" id="Email" name="Email" placeholder="Email" value="@securityUser.Email">
+                                        </div>
+                                       
+                                        <input type="hidden" name="Id" value="@securityUser.Id">
+                                        <input type="hidden" name="PhoneNumber" value="@securityUser.PhoneNumber">
+                                        <input type="hidden" name="FirstName" value="@securityUser.FirstName">
+                                        <input type="hidden" name="LastName" value="@securityUser.LastName">
+                                        <input type="hidden" name="HiredDate" value="@securityUser.HiredDate">
+                                        <!-- Hidden input for Role -->
+                                        <input type="hidden" name="Role" value="@string.Join(", ", securityUser.Roles)">
+                                        <button type="submit" class="btn btn-primary">Submit Changes</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+
+
+
             <div class="tab-pane fade" id="feedback" role="tabpanel">
                 <!-- Palantir Message Submit Form -->
                 <div class="palantir-message-container">
@@ -63,6 +126,43 @@
             </div>
         </div>
     </div>
-
-
 </div>
+
+@functions {
+    public static string ConvertToEasternTime(string dateTimeString)
+    {
+        DateTime utcDateTime;
+        if (DateTime.TryParse(dateTimeString, out utcDateTime))
+        {
+            TimeZoneInfo easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            DateTime easternTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, easternZone);
+            return easternTime.ToString("MM.dd.yyyy"); // Only the date
+        }
+        return dateTimeString;
+    }
+}
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Initially collapse all rows
+        const detailRows = document.querySelectorAll(".admin-user-collapse");
+        detailRows.forEach(row => {
+            row.style.display = 'none';
+        });
+
+        // Add click event listener to toggle collapse
+        const rows = document.querySelectorAll(".clickable-row");
+        rows.forEach(row => {
+            row.addEventListener("click", function () {
+                const targetId = this.getAttribute("data-target").substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement.style.display === 'none' || targetElement.style.display === '') {
+                    targetElement.style.display = 'table-row';
+                } else {
+                    targetElement.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
