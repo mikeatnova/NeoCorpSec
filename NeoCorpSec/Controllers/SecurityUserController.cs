@@ -91,8 +91,6 @@ namespace NeoCorpSec.Controllers
             }
         }
 
-
-
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> LoginPost(LoginSecurityUser loginSecurityUser)

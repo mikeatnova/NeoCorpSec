@@ -1,9 +1,7 @@
 ﻿@model NeoCorpSec.Models.Messaging.PalantirMessage
 
 <div class="container">
-    <div>
-        <p>This is the Profile Page</p>
-    </div>
+    <h1 class="display-4 text-center">Profile Page</h1>
 
     @if (TempData["SuccessMessage"] != null)
     {
@@ -18,32 +16,53 @@
         </div>
     }
 
-
-
-    <form method="post" asp-controller="SecurityUser" asp-action="SendPalantirMessage">
-        <div>
-            <p>Send a message to the developer</p>
-        </div>
-        <div class="form-group">
-            <label for="Title">Title</label>
-            <input type="text" class="form-control" id="Title" name="Title" required />
-        </div>
-        <div class="form-group">
-            <label for="MessageBody">Message Body</label>
-            <textarea class="form-control" id="MessageBody" name="MessageBody" rows="3" required></textarea>
-        </div>
-        <div>
-            <label>Urgency Rating</label>
-            @for (int i = 1; i <= 5; i++)
-            {
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="UrgencyRating" id="UrgencyRating@(i)" value="@i" required />
-                    <label class="form-check-label" for="UrgencyRating@(i)">
-                        @i
-                    </label>
+    <div class="container">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link active" id="account-tab" data-bs-toggle="tab" href="#account" role="tab">Account Details</a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="feedback-tab" data-bs-toggle="tab" href="#feedback" role="tab">Feedback</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="account" role="tabpanel">
+                <!-- Account Details -->
+                <p>Here is the Account Page</p>
+            </div>
+            <div class="tab-pane fade" id="feedback" role="tabpanel">
+                <!-- Palantir Message Submit Form -->
+                <div class="palantir-message-container">
+                    <form method="post" asp-controller="SecurityUser" asp-action="SendPalantirMessage">
+                        <h3 class="admin-section-header">Send a Message to the Developer</h3>
+                        <div class="form-group">
+                            <label for="Title">Title</label>
+                            <input type="text" class="form-control" id="Title" name="Title" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="MessageBody">Message Body</label>
+                            <textarea class="form-control" id="MessageBody" name="MessageBody" rows="3" required></textarea>
+                        </div>
+                        <div>
+                            <label class="d-block">Urgency Rating</label>
+                            <div class="d-flex justify-content-start">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="UrgencyRating" id="UrgencyRating@(i)" value="@i" required />
+                                        <label class="form-check-label" for="UrgencyRating@(i)">
+                                            @i
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
                 </div>
-            }
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    </div>
+
+
 </div>

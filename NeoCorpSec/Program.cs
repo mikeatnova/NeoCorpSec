@@ -14,6 +14,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<JwtExtractorHelper>();
+builder.Services.AddTransient<ActivityLogService>();
+
 
 
 builder.Services.AddHttpClient("apiClient", client =>

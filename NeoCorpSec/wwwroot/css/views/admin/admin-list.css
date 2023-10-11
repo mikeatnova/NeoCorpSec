@@ -135,3 +135,11 @@ details[open] .admin-summary::before {
     color: #999;
     font-style: italic;
 }
+
+.prioritized-messaging-section {
+    margin-top: 15px;
+}
+
+.tab-pane {
+    margin-top: 15px;
+}

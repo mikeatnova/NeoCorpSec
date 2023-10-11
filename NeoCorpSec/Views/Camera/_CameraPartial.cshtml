@@ -103,8 +103,8 @@
                                 foreach (var note in sortedNotes)
                                 {
                                     <div class="single-note">
-                                        <span class="note-badge">@note.Username:</span>
-                                        <span class="note-badge">@ConvertToEasternTime(note.CreatedAt.ToString("o"))</span>
+                                        <span class="note-badge">@($"{note.FirstName ?? "Unknown"} {note.LastName?.FirstOrDefault() ?? 'N'}.")</span>
+                                        <span>[@ConvertToEasternTime(note.CreatedAt.ToString("o"))]:</span>
                                         <span>@note.Content</span>
                                     </div>
                                 }

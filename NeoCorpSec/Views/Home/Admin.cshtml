@@ -25,8 +25,6 @@
     </div>
 }
 
-
-
 <div>
     <h1 class="display-4 text-center">Admin Page</h1>
     @if (TempData["StatusType"] != null && TempData["StatusType"].ToString() == "danger")
@@ -37,241 +35,281 @@
     }
 
     <div class="container">
-        <!-- Users Section -->
-        <details>
-            <summary class="admin-summary"><h2>Security Users</h2></summary>
-            <!-- List of Security Users -->
-            <div id="users-section">
-                @if (sortedModel != null && sortedModel.Count > 0)
-                {
-                    <table class="table text-light">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Role</th>
-                                <th>First Name</th>
-                                <th>Last Name</th>
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Phone Number</th>
-                                <th>Hired Date</th>
-                                <th>ID</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var user in sortedModel)
-                            {
-                                <tr class="clickable-row" data-toggle="collapse" data-target="#details-@user.Id">
-                                    <td>@counter</td>
-                                    <td>@string.Join(", ", user.Roles)</td>
-                                    <td>@user.FirstName</td>
-                                    <td>@user.LastName</td>
-                                    <td>@user.UserName</td>
-                                    <td>@user.Email</td>
-                                    <td>@user.PhoneNumber</td>
-                                    <td>@ConvertToEasternTime(user.HiredDate)</td>
-                                    <td>@user.Id</td>
-                                </tr>
-                                counter++;
-                                <tr id="details-@user.Id" class="admin-user-collapse add admin-section-container">
-                                    <td colspan="7">
-                                        <h3 class="admin-section-header">Edit User</h3>
-                                        <form method="post" asp-controller="Home" asp-action="AdminUpdateSecurityUser">
-                                            <div class="form-group">
-                                                <label for="FirstName">First Name:</label>
-                                                <input class="admin-user-input-details form-control" type="text" id="FirstName" name="FirstName" placeholder="First Name" value="@user.FirstName">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="LastName">Last Name:</label>
-                                                <input class="admin-user-input-details form-control" type="text" id="LastName" name="LastName" placeholder="Last Name" value="@user.LastName">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="UserName">Username:</label>
-                                                <input class="admin-user-input-details form-control" type="text" id="UserName" name="UserName" placeholder="Username" value="@user.UserName">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="Email">Email:</label>
-                                                <input class="admin-user-input-details form-control" type="email" id="Email" name="Email" placeholder="Email" value="@user.Email">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="PhoneNumber">Phone Number:</label>
-                                                <input class="admin-user-input-details form-control" type="text" id="PhoneNumber" name="PhoneNumber" placeholder="Phone Number" value="@user.PhoneNumber">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="HiredDate">Hired Date:</label>
-                                                <input type="date" id="HiredDate" name="HiredDate" class="form-control" />
-                                            </div>
-                                            <input type="hidden" name="Id" value="@user.Id">
-                                            <!-- Hidden input for Role -->
-                                            <input type="hidden" name="Role" value="@string.Join(", ", user.Roles)">
-                                            <button type="submit" class="btn btn-primary">Submit Changes</button>
-                                        </form>
-                                    </td>
-                                </tr>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#priority">Priority Message</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#users">Security Users</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#cameras">Cameras</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#locations">Locations</a>
+            </li>
+        </ul>
 
-                            }
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <p>No Security Users found.</p>
-                }
+        <div class="tab-content">
+            <!-- PRIORITY MESSAGE -->
+            <div class="tab-pane fade show active prioritized-messaging-section" id="priority">
+                <div id="prioritized-messaging-section admin-section-container">
+                    <div class="form-group">
+                        <h3 class="admin-section-header">Send a Priority Message to the Team</h3>
+                        <textarea class="form-control" id="" name="" rows="3" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
             </div>
 
-            <!-- Add Security User -->
-            <div id="add-security-user-container" class="security-user admin-section-container">
-                <h3 class="admin-section-header">Add Security User</h3>
-                <form method="post" asp-controller="Home" asp-action="AddNewSecurityUser">
-                    <div class="form-group">
-                        <label for="FirstName">First Name:</label>
-                        <input type="text" id="FirstName" name="FirstName" placeholder="e.g. Neo" class="form-control" required maxlength="50" />
-                    </div>
-                    <div class="form-group">
-                        <label for="LastName">Last Name:</label>
-                        <input type="text" id="LastName" name="LastName" placeholder="e.g. Anderson" class="form-control" required maxlength="50" />
-                    </div>
-                    <div class="form-group">
-                        <label for="Email">Email:</label>
-                        <input type="email" id="Email" name="Email" placeholder="e.g. nanderson@zion.com" class="form-control" />
-                    </div>
-                    <div>
-                        <label>Role</label>
-                        <div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="Role" id="SecurityOfficer" value="SecurityOfficer">
-                                <label class="form-check-label" for="SecurityOfficer">
-                                    Security Officer
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="Role" id="SecuritySupervisor" value="SecuritySupervisor">
-                                <label class="form-check-label" for="SecuritySupervisor">
-                                    Security Supervisor
-                                </label>
-                            </div>
-
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="Role" id="SecurityManager" value="SecurityManager">
-                                <label class="form-check-label" for="SecurityManager">
-                                    Security Manager
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="Password">Password:</label>
-                        <input type="password" id="Password" name="Password" placeholder="6+ characters, one uppercase, one lowercase, one number, and one special character." class="form-control" required minlength="6" />
-                    </div>
-                    <div class="form-group">
-                        <label for="retypePassword">Retype Password</label>
-                        <input type="password" id="retypePassword" name="RetypePassword" placeholder="Match the password" class="form-control" required />
-                    </div>
-                    <div class="form-group">
-                        <label for="HiredDate">Hired Date:</label>
-                        <input type="date" id="HiredDate" name="HiredDate" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label for="PhoneNumber">Phone Number:</label>
-                        <input type="tel" id="PhoneNumber" name="PhoneNumber" placeholder="e.g. 012 345 6789" class="form-control" />
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create Security User</button>
-                </form>
-            </div>
-        </details>
-
-        <!-- Cameras Section -->
-        <details>
-            <summary class="admin-summary"><h2>Cameras</h2></summary>
-            <div id="cameras-section">
-                <!-- Add Camera -->
-                <div id="add-camera-container" class="add admin-section-container">
-                    <h3 class="admin-section-header">Add Camera</h3>
-                    <!-- Your Cameras content here -->
-                    <form method="post" asp-controller="Home" asp-action="AddNewCamera">
-                        <div class="form-group">
-                            <label for="Name">Camera Name:</label>
-                            <input type="text" id="Name" name="Name" class="form-control" required maxlength="100" />
-                        </div>
-
-                        <div class="form-group">
-                            <label for="LocationId">Location:</label>
-                            <select id="LocationId" name="LocationId" class="form-control" required>
-                                <option value="">--Select Location--</option>
-                                @foreach (var location in ViewBag.Locations)
+            <!-- USERS -->
+            <div class="tab-pane fade" id="users">
+                <!-- List of Security Users -->
+                <details open>
+                    <summary class="admin-summary"><h2> Full Security Team</h2></summary>
+                    <h3 class="admin-section-header">*Tap user to edit details</h3>
+                    <div id="users-section">
+                    @if (sortedModel != null && sortedModel.Count > 0)
+                    {
+                        <table class="table text-light">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Role</th>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Phone Number</th>
+                                    <th>Hired Date</th>
+                                    <th>ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in sortedModel)
                                 {
-                                    <option value="@location.ID">@location.Name, @location.City, @location.State</option>
+                                    <tr class="clickable-row" data-toggle="collapse" data-target="#details-@user.Id">
+                                        <td>@counter</td>
+                                        <td>@string.Join(", ", user.Roles)</td>
+                                        <td>@user.FirstName</td>
+                                        <td>@user.LastName</td>
+                                        <td>@user.UserName</td>
+                                        <td>@user.Email</td>
+                                        <td>@user.PhoneNumber</td>
+                                        <td>@ConvertToEasternTime(user.HiredDate)</td>
+                                        <td>@user.Id</td>
+                                    </tr>
+                                    counter++;
+                                    <tr id="details-@user.Id" class="admin-user-collapse add admin-section-container">
+                                        <td colspan="7">
+                                            <h3 class="admin-section-header">Edit User</h3>
+                                            <form method="post" asp-controller="Home" asp-action="AdminUpdateSecurityUser">
+                                                <div class="form-group">
+                                                    <label for="FirstName">First Name:</label>
+                                                    <input class="admin-user-input-details form-control" type="text" id="FirstName" name="FirstName" placeholder="First Name" value="@user.FirstName">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="LastName">Last Name:</label>
+                                                    <input class="admin-user-input-details form-control" type="text" id="LastName" name="LastName" placeholder="Last Name" value="@user.LastName">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="UserName">Username:</label>
+                                                    <input class="admin-user-input-details form-control" type="text" id="UserName" name="UserName" placeholder="Username" value="@user.UserName">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="Email">Email:</label>
+                                                    <input class="admin-user-input-details form-control" type="email" id="Email" name="Email" placeholder="Email" value="@user.Email">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="PhoneNumber">Phone Number:</label>
+                                                    <input class="admin-user-input-details form-control" type="text" id="PhoneNumber" name="PhoneNumber" placeholder="Phone Number" value="@user.PhoneNumber">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="HiredDate">Hired Date:</label>
+                                                    <input type="date" id="HiredDate" name="HiredDate" class="form-control" />
+                                                </div>
+                                                <input type="hidden" name="Id" value="@user.Id">
+                                                <!-- Hidden input for Role -->
+                                                <input type="hidden" name="Role" value="@string.Join(", ", user.Roles)">
+                                                <button type="submit" class="btn btn-primary">Submit Changes</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+
                                 }
-                            </select>
-                        </div>
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p>No Security Users found.</p>
+                    }
+                </div>
+                </details>
 
+                <!-- Add Security User -->
+                <details>
+                    <summary class="admin-summary"><h2>Add Security User</h2></summary>
+                    <div id="add-security-user-container" class="security-user admin-section-container">
+                    <form method="post" asp-controller="Home" asp-action="AddNewSecurityUser">
                         <div class="form-group">
-                            <label for="CurrentStatus">Current Status:</label>
-                            <select id="CurrentStatus" name="CurrentStatus" class="form-control" required>
-                                <option value="Up">Up</option>
-                                <option value="Issues">Issues</option>
-                                <option value="Down">Down</option>
-                                <option value="Decommissioned">Decommissioned</option>
-                                <option value="Unboxed" selected>Unboxed</option>
-                            </select>
+                            <label for="FirstName">First Name:</label>
+                            <input type="text" id="FirstName" name="FirstName" placeholder="e.g. Neo" class="form-control" required maxlength="50" />
                         </div>
+                        <div class="form-group">
+                            <label for="LastName">Last Name:</label>
+                            <input type="text" id="LastName" name="LastName" placeholder="e.g. Anderson" class="form-control" required maxlength="50" />
+                        </div>
+                        <div class="form-group">
+                            <label for="Email">Email:</label>
+                            <input type="email" id="Email" name="Email" placeholder="e.g. nanderson@zion.com" class="form-control" />
+                        </div>
+                        <div>
+                            <label>Role</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="Role" id="SecurityOfficer" value="SecurityOfficer">
+                                    <label class="form-check-label" for="SecurityOfficer">
+                                        Security Officer
+                                    </label>
+                                </div>
 
-                        <button type="submit" class="btn btn-primary">Add Camera</button>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="Role" id="SecuritySupervisor" value="SecuritySupervisor">
+                                    <label class="form-check-label" for="SecuritySupervisor">
+                                        Security Supervisor
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="Role" id="SecurityManager" value="SecurityManager">
+                                    <label class="form-check-label" for="SecurityManager">
+                                        Security Manager
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="Password">Password:</label>
+                            <input type="password" id="Password" name="Password" placeholder="6+ characters, one uppercase, one lowercase, one number, and one special character." class="form-control" required minlength="6" />
+                        </div>
+                        <div class="form-group">
+                            <label for="retypePassword">Retype Password</label>
+                            <input type="password" id="retypePassword" name="RetypePassword" placeholder="Match the password" class="form-control" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="HiredDate">Hired Date:</label>
+                            <input type="date" id="HiredDate" name="HiredDate" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label for="PhoneNumber">Phone Number:</label>
+                            <input type="tel" id="PhoneNumber" name="PhoneNumber" placeholder="e.g. 012 345 6789" class="form-control" />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Security User</button>
                     </form>
                 </div>
+                </details>
+            </div>
 
-                <!-- Decommission Camera -->
-                <div id="decommission-camera-container" class="decommission admin-section-container">
-                    <h3 class="admin-section-header">Decommission Camera</h3>
-                    <form method="post" asp-controller="Home" asp-action="EditCameraCurrentStatus">
-                        <div class="form-group">
-                            <label for="cameraId">Camera ID:</label>
-                            <input type="number" id="cameraId" name="cameraId" placeholder="e.g. '333', '127', '420'..." class="form-control" required />
+            <!-- CAMERA -->
+            <div class="tab-pane fade" id="cameras">
+                <div id="cameras-section">
+                    <!-- Add Camera -->
+                    <details open>
+                        <summary class="admin-summary">
+                            <h2>Add Camera</h2>
+                        </summary>
+                        <div id="add-camera-container" class="add admin-section-container">
+                            <!-- Your Cameras content here -->
+                            <form method="post" asp-controller="Home" asp-action="AddNewCamera">
+                                <div class="form-group">
+                                    <label for="Name">Camera Name:</label>
+                                    <input type="text" id="Name" name="Name" class="form-control" required maxlength="100" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="LocationId">Location:</label>
+                                    <select id="LocationId" name="LocationId" class="form-control" required>
+                                        <option value="">--Select Location--</option>
+                                        @foreach (var location in ViewBag.Locations)
+                                        {
+                                            <option value="@location.ID">@location.Name, @location.City, @location.State</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="CurrentStatus">Current Status:</label>
+                                    <select id="CurrentStatus" name="CurrentStatus" class="form-control" required>
+                                        <option value="Up">Up</option>
+                                        <option value="Issues">Issues</option>
+                                        <option value="Down">Down</option>
+                                        <option value="Decommissioned">Decommissioned</option>
+                                        <option value="Unboxed" selected>Unboxed</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">Add Camera</button>
+                            </form>
                         </div>
-                        <input type="hidden" name="newStatus" value="Decommissioned">
-                        <button type="submit" class="btn btn-danger">Decommission</button>
-                    </form>
+                    </details>
+
+                    <!-- Decommission Camera -->
+                    <details>
+                        <summary class="admin-summary">
+                            <h2>Decommission Camera</h2>
+                        </summary>
+                        <div id="decommission-camera-container" class="decommission admin-section-container">
+                            <form method="post" asp-controller="Home" asp-action="EditCameraCurrentStatus">
+                                <div class="form-group">
+                                    <label for="cameraId">Camera ID:</label>
+                                    <input type="number" id="cameraId" name="cameraId" placeholder="e.g. '333', '127', '420'..." class="form-control" required />
+                                </div>
+                                <input type="hidden" name="newStatus" value="Decommissioned">
+                                <button type="submit" class="btn btn-danger">Decommission</button>
+                            </form>
+                        </div>
+                    </details>
+
                 </div>
-
             </div>
-        </details>
 
-        <!-- Locations Section -->
-        <details>
-            <summary class="admin-summary"><h2>Locations</h2></summary>
-            <div id="locations-section">
-                <!-- Add Location -->
-                <div id="add-location-container" class="location admin-section-container">
-                    <h3 class="admin-section-header">Add Location</h3>
-                    <form method="post" asp-controller="Home" asp-action="AddNewLocation">
-                        <div class="form-group">
-                            <label for="Name">Location Address:</label>
-                            <input type="text" id="Name" name="Name" class="form-control" required maxlength="100" />
-                        </div>
-                        <div class="form-group">
-                            <label for="City">City:</label>
-                            <input type="text" id="City" name="City" class="form-control" required maxlength="50" />
-                        </div>
-                        <div class="form-group">
-                            <label for="State">State:</label>
-                            <input type="text" id="State" name="State" class="form-control" required maxlength="20" />
-                        </div>
-                        <button type="submit" class="btn btn-primary">Add Location</button>
-                    </form>
+            <!-- LOCATIONS -->
+            <div class="tab-pane fade" id="locations">
+                <div id="locations-section">
+                    <!-- Add Location -->
+                    <details open>
+                        <summary class="admin-summary">
+                            <h2>Add Location</h2>
+                        </summary>
+                        <div id="add-location-container" class="location admin-section-container">
+                        <form method="post" asp-controller="Home" asp-action="AddNewLocation">
+                            <div class="form-group">
+                                <label for="Name">Location Address:</label>
+                                <input type="text" id="Name" name="Name" class="form-control" required maxlength="100" />
+                            </div>
+                            <div class="form-group">
+                                <label for="City">City:</label>
+                                <input type="text" id="City" name="City" class="form-control" required maxlength="50" />
+                            </div>
+                            <div class="form-group">
+                                <label for="State">State:</label>
+                                <input type="text" id="State" name="State" class="form-control" required maxlength="20" />
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Location</button>
+                        </form>
+                    </div>
+                    </details>
                 </div>
             </div>
-        </details>
-
-        <!-- Prioritized Messaging Section -->
-        <details>
-            <summary class="admin-summary"><h2>Prioritized Messaging</h2></summary>
-            <div id="prioritized-messaging-section">
-                <!-- Your Prioritized Messaging content here -->
-                <p>Content</p>
-            </div>
-        </details>
+        </div>
     </div>
+
+
+
+
+
+
 </div>
 
 @functions {

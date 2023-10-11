@@ -1,0 +1,48 @@
+﻿@model IEnumerable<NeoCorpSec.Models.Reporting.ActivityLog>
+@{
+    ViewData["Title"] = "Activity Log";
+    var reverseOrderModel = Model.OrderByDescending(log => log.ActionTime);
+
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Activity Log</h1>
+</div>
+
+<div class="activity-log-container">
+    @if (Model.Any())
+    {
+        <ul class="list-group activity-log-list">
+            @foreach (var log in reverseOrderModel)
+            {
+                <li class="list-group-item activity-log-item">
+                    <span class="activity-log-name">@($"{log.FirstName} {log.LastName}")</span>
+                    <span class="activity-log-details">@($"{log.Action.ToUpper()}")</span>
+                    <span class="activity-log-split"> | </span>
+                    <span class="activity-log-time">@ConvertToEasternTime($"{log.ActionTime}")</span>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <div class="alert alert-info activity-log-alert" role="alert">
+            There are no activity logs to display.
+        </div>
+    }
+</div>
+
+@functions {
+    public static string ConvertToEasternTime(string dateTimeString)
+    {
+        DateTime utcDateTime;
+        if (DateTime.TryParse(dateTimeString, out utcDateTime))
+        {
+            TimeZoneInfo easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            DateTime easternTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, easternZone);
+            return easternTime.ToString("MM.dd.yyyy hh:mm:ss tt"); // Only the date
+        }
+        return dateTimeString;
+    }
+}

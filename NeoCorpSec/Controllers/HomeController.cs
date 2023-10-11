@@ -24,12 +24,14 @@ namespace NeoCorpSec.Controllers
         private readonly IConfiguration _configuration;
         private readonly JwtExtractorHelper _jwtExtractorHelper;
         private readonly ILogger<HomeController> _logger;
+        private readonly ActivityLogService _activityLogService;
 
         public HomeController(ILogger<HomeController> logger, IConfiguration configuration, JwtExtractorHelper jwtExtractorHelper)
         {
             _logger = logger;
             _jwtExtractorHelper = jwtExtractorHelper;
             _configuration = configuration;
+            _activityLogService = new ActivityLogService();
         }
 
         private async Task<IActionResult> GetViewAsync<T>(string url)
@@ -59,6 +61,30 @@ namespace NeoCorpSec.Controllers
         public IActionResult TourPage()
         {
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ActivityLog()
+        {
+            string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+            using (var httpClient = InitializeHttpClient())
+            {
+                // Fetch ActivityLogs
+                var activityLogResponse = await httpClient.GetAsync($"{baseUrl}/api/ActivityLog");
+
+                var activityLogOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+                List<Models.Reporting.ActivityLog> activityLogs = new List<Models.Reporting.ActivityLog>();
+
+                if (activityLogResponse.IsSuccessStatusCode)
+                {
+                    // Handle activity log data
+                    var activityLogContent = await activityLogResponse.Content.ReadAsStringAsync();
+                    activityLogs = JsonSerializer.Deserialize<List<Models.Reporting.ActivityLog>>(activityLogContent, activityLogOptions);
+                }
+
+                return View(activityLogs);
+            }
         }
 
 
@@ -142,8 +168,8 @@ namespace NeoCorpSec.Controllers
 
                 string identityUserId = claims?.FindFirst("sub")?.Value ?? string.Empty;
                 string username = claims.FindFirst(ClaimTypes.Name)?.Value;
-                string firstName = claims.FindFirst(ClaimTypes.GivenName)?.Value;
-                string lastName = claims.FindFirst(ClaimTypes.Surname)?.Value;
+                string firstName = claims.FindFirst("FirstName")?.Value;
+                string lastName = claims.FindFirst("LastName")?.Value;
                 string role = claims.FindFirst(ClaimTypes.Role)?.Value;
 
                 if (string.IsNullOrEmpty(identityUserId) || string.IsNullOrEmpty(username))
@@ -179,7 +205,7 @@ namespace NeoCorpSec.Controllers
                     if (response.IsSuccessStatusCode)
                     {
                         // Success case for adding note
-                        TempData["SuccessMessage"] = $"Note was successfully added to camera {cameraId}";
+                        TempData["SuccessMessage"] = $"Note was successfully added to camera #{cameraId}";
 
                         // Fetch the existing camera to update ModifiedAt
                         var fetchCameraResponse = await httpClient.GetAsync($"{baseUrl}/api/Camera/{cameraId}");
@@ -199,11 +225,30 @@ namespace NeoCorpSec.Controllers
 
                             if (updateCameraResponse.IsSuccessStatusCode)
                             {
-                                TempData["UpdateMessage"] = $"Camera {cameraId} ModifiedAt was successfully updated.";
+                                // Prepare the Activity Log with the CurrentActivityLog from CoreController
+                                var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"added a note to Camera #{existingCamera.ID}, {existingCamera.Name}");
+
+                                // Log the prepared Activity Log
+                                var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
+                                var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
+
+                                if (logResponse.IsSuccessStatusCode)
+                                {
+                                    TempData["ApiMessage"] = $"Camera '{existingCamera.Name}' was successfully updated.";
+                                    return RedirectToAction("CameraList");
+                                }
+                                else
+                                {
+                                    var logErrorContent = await logResponse.Content.ReadAsStringAsync();
+                                    TempData["ApiLogError"] = $"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}";
+                                    return RedirectToAction("CameraList");
+                                }
                             }
                             else
                             {
-                                TempData["FailureMessage"] = $"Failed to update ModifiedAt for camera {cameraId}";
+                                _logger.LogError($"Failed to update ModifiedAt for camera {cameraId}");
+                                TempData["ApiLogError"] = $"Failed to update ModifiedAt for camera {cameraId}";
+                                return RedirectToAction("CameraList");
                             }
                         }
                         else
@@ -227,6 +272,7 @@ namespace NeoCorpSec.Controllers
             }
         }
 
+
         [HttpPost]
         public async Task<IActionResult> AddNewCamera(Camera newCamera)
         {
@@ -247,8 +293,23 @@ namespace NeoCorpSec.Controllers
                     // Handle response
                     if (response.IsSuccessStatusCode)
                     {
-                        TempData["SuccessMessage"] = $"Camera '{newCamera.Name}' has been added successfully.";
-                        return RedirectToAction("Admin");
+                        // Prepare the Activity Log with the CurrentActivityLog from CoreController
+                        var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"created a New Camera and named it {newCamera.Name}.");
+
+                        // Log the prepared Activity Log
+                        var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
+                        var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
+                        if (logResponse.IsSuccessStatusCode)
+                        {
+                            TempData["SuccessMessage"] = $"Camera '{newCamera.Name}' has been added successfully.";
+                            return RedirectToAction("Admin");
+                        }
+                        else
+                        {
+                            var logErrorContent = await logResponse.Content.ReadAsStringAsync();
+                            TempData["ApiLogError"] = $"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}";
+                            return RedirectToAction("Admin");
+                        }
                     }
                     else
                     {
@@ -283,36 +344,48 @@ namespace NeoCorpSec.Controllers
                         var cameraJson = await fetchResponse.Content.ReadAsStringAsync();
                         var existingCamera = JsonConvert.DeserializeObject<Camera>(cameraJson);
 
-                        // Update the fields you want to change
+                        // Update the camera's status and ModifiedAt fields
                         existingCamera.CurrentStatus = newStatus;
                         existingCamera.ModifiedAt = DateTime.UtcNow;
 
-                        // Serialize it
                         var updateContent = new StringContent(JsonConvert.SerializeObject(existingCamera), Encoding.UTF8, "application/json");
 
-                        // Send the PUT request
+                        // Update the existing camera
                         var updateResponse = await httpClient.PutAsync($"{baseUrl}/api/Camera/{cameraId}", updateContent);
 
                         if (updateResponse.IsSuccessStatusCode)
                         {
-                            // Success case
-                            TempData["ApiMessage"] = $"Camera '{existingCamera.Name}' was updated successfully";
-                            return RedirectToAction("CameraList");
+                            // Prepare the Activity Log with the CurrentActivityLog from CoreController
+                            var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"changed the status of Camera #{existingCamera.ID}, {existingCamera.Name }, to {existingCamera.CurrentStatus}.");
+
+                            // Log the prepared Activity Log
+                            var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
+                            var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
+
+                            if (logResponse.IsSuccessStatusCode)
+                            {
+                                TempData["ApiMessage"] = $"Camera '{existingCamera.Name}' was updated successfully";
+                                return RedirectToAction("CameraList");
+                            }
+                            else
+                            {
+                                var logErrorContent = await logResponse.Content.ReadAsStringAsync();
+                                _logger.LogError($"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}");
+                                TempData["ApiLogError"] = $"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}";
+                                return RedirectToAction("CameraList");
+                            }
                         }
+
                         else
                         {
-                            // Handle error
                             var errorContent = await updateResponse.Content.ReadAsStringAsync();
-                            _logger.LogError($"Error updating camera: {errorContent}");
                             TempData["ApiError"] = $"Error: {updateResponse.StatusCode}, {updateResponse.ReasonPhrase}";
                             return View("Error", new { message = $"Error: {updateResponse.StatusCode}, {updateResponse.ReasonPhrase}" });
                         }
                     }
                     else
                     {
-                        // Handle error
                         var errorContent = await fetchResponse.Content.ReadAsStringAsync();
-                        _logger.LogError($"Error fetching camera: {errorContent}");
                         TempData["ApiError"] = $"Error: {fetchResponse.StatusCode}, {fetchResponse.ReasonPhrase}";
                         return View("Error", new { message = $"Error: {fetchResponse.StatusCode}, {fetchResponse.ReasonPhrase}" });
                     }
@@ -428,8 +501,6 @@ namespace NeoCorpSec.Controllers
                 return View("Error", new { message = $"An exception occurred: {ex.Message}" });
             }
         }
-
-
 
         [HttpPost]
         public async Task<IActionResult> AdminUpdateSecurityUser(UpdateSecurityUserDto updatedUser)
