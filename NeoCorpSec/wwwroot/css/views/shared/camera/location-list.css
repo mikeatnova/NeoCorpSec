@@ -27,8 +27,8 @@
     }
 
 .location-list-summery {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     align-items: center;
     padding: 5px;
     border-bottom: 1px solid #cccccc7b;
@@ -38,6 +38,7 @@
 .location-list-header {
     margin: 0;
     flex-grow: 1;
+    align-items: center;
 }
 
 .location-list-address {
@@ -72,7 +73,21 @@
     border-radius: 0 0 5px 5px;
 }
 
-.status-block {
-    position: absolute; /* Added */
-    right: 0;
+.nameaddress-block {
 }
+
+.status-block {
+    right: 0;
+    justify-self: end;
+}
+
+.alarmdate-block {
+    text-align: center;
+}
+
+.reset-thirtyday-btn {
+    margin-bottom: 1rem;
+}
+    .reset-thirtyday-btn:hover {
+        font-weight: bold;
+    }
