@@ -15,6 +15,8 @@ using NeoCorpSec.Models.Authenitcation;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Net.Http.Headers;
+using Microsoft.CodeAnalysis;
+using Location = NeoCorpSec.Models.CameraManagement.Location;
 
 namespace NeoCorpSec.Controllers
 {
@@ -225,7 +227,7 @@ namespace NeoCorpSec.Controllers
                             if (updateCameraResponse.IsSuccessStatusCode)
                             {
                                 // Prepare the Activity Log with the CurrentActivityLog from CoreController
-                                var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"added a note to Camera #{existingCamera.ID}, {existingCamera.Name}");
+                                var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"added a note to Camera #{existingCamera.ID}, {existingCamera.Name}", "Add");
 
                                 // Log the prepared Activity Log
                                 var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
@@ -271,7 +273,6 @@ namespace NeoCorpSec.Controllers
             }
         }
 
-
         [HttpPost]
         public async Task<IActionResult> AddNewCamera(Camera newCamera)
         {
@@ -293,7 +294,7 @@ namespace NeoCorpSec.Controllers
                     if (response.IsSuccessStatusCode)
                     {
                         // Prepare the Activity Log with the CurrentActivityLog from CoreController
-                        var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"created a New Camera and named it {newCamera.Name}.");
+                        var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"created a New Camera and named it {newCamera.Name}.", "Create");
 
                         // Log the prepared Activity Log
                         var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
@@ -355,7 +356,7 @@ namespace NeoCorpSec.Controllers
                         if (updateResponse.IsSuccessStatusCode)
                         {
                             // Prepare the Activity Log with the CurrentActivityLog from CoreController
-                            var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"changed the status of Camera #{existingCamera.ID}, {existingCamera.Name }, to {existingCamera.CurrentStatus}.");
+                            var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"updated the status of Camera #{existingCamera.ID}, {existingCamera.Name }, to {existingCamera.CurrentStatus}.", "Update");
 
                             // Log the prepared Activity Log
                             var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
@@ -484,8 +485,23 @@ namespace NeoCorpSec.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        TempData["SuccessMessage"] = $"Security User was successfully created with role {seedUser.Role}";
-                        return RedirectToAction("Admin"); // Assuming you have a SecurityUserList action
+                        // Prepare the Activity Log with the CurrentActivityLog from CoreController
+                        var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"created a new {seedUser.Role}.", "Create");
+
+                        // Log the prepared Activity Log
+                        var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
+                        var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
+                        if (logResponse.IsSuccessStatusCode)
+                        {
+                            TempData["SuccessMessage"] = $"Security User was successfully created with the {seedUser.Role} role.";
+                            return RedirectToAction("Admin");
+                        }
+                        else
+                        {
+                            var logErrorContent = await logResponse.Content.ReadAsStringAsync();
+                            TempData["ApiLogError"] = $"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}";
+                            return RedirectToAction("Admin");
+                        }
                     }
                     else
                     {
@@ -520,8 +536,23 @@ namespace NeoCorpSec.Controllers
                     // Handle response
                     if (response.IsSuccessStatusCode)
                     {
-                        TempData["SuccessMessage"] = $"{updatedUser.UserName} has been updated successfully.";
-                        return RedirectToAction("Admin");
+                        // Prepare the Activity Log with the CurrentActivityLog from CoreController
+                        var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"updated a Security User's details.", "Update");
+
+                        // Log the prepared Activity Log
+                        var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
+                        var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
+                        if (logResponse.IsSuccessStatusCode)
+                        {
+                            TempData["SuccessMessage"] = $"{updatedUser.UserName} has been updated successfully.";
+                            return RedirectToAction("Admin");
+                        }
+                        else
+                        {
+                            var logErrorContent = await logResponse.Content.ReadAsStringAsync();
+                            TempData["ApiLogError"] = $"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}";
+                            return RedirectToAction("Admin");
+                        }
                     }
                     else
                     {
@@ -558,8 +589,23 @@ namespace NeoCorpSec.Controllers
                     // Handle response
                     if (response.IsSuccessStatusCode)
                     {
-                        TempData["SuccessMessage"] = $"Location '{newLocation.Name}' has been added successfully.";
-                        return RedirectToAction("Admin");
+                        // Prepare the Activity Log with the CurrentActivityLog from CoreController
+                        var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"added a new Location #{newLocation.ID} in {newLocation.City}, {newLocation.State}.", "Add");
+
+                        // Log the prepared Activity Log
+                        var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
+                        var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
+                        if (logResponse.IsSuccessStatusCode)
+                        {
+                            TempData["SuccessMessage"] = $"Location '{newLocation.Name}' has been added successfully.";
+                            return RedirectToAction("Admin");
+                        }
+                        else
+                        {
+                            var logErrorContent = await logResponse.Content.ReadAsStringAsync();
+                            TempData["ApiLogError"] = $"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}";
+                            return RedirectToAction("Admin");
+                        }
                     }
                     else
                     {
@@ -607,14 +653,14 @@ namespace NeoCorpSec.Controllers
                         if (updateResponse.IsSuccessStatusCode)
                         {
                             // Prepare the Activity Log with the CurrentActivityLog from CoreController
-                            var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"completed the 30 day check for Location #{location.ID} in {location.City}, {location.State}.");
+                            var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"completed the 30 Day Camera check for Location #{location.ID} in {location.City}, {location.State}.", "30 Day");
 
                             // Log the prepared Activity Log
                             var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
                             var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
                             if (logResponse.IsSuccessStatusCode)
                             {
-                                TempData["SuccessMessage"] = $"Next check date for location '{location.Name}' has been reset successfully.";
+                                TempData["SuccessMessage"] = $"30 Day Camera check for location '{location.Name}' has been reset successfully.";
                                 return RedirectToAction("CameraList");
                             }
                             else
@@ -627,7 +673,7 @@ namespace NeoCorpSec.Controllers
                         else
                         {
                             _logger.LogError($"Error updating next check date: {await updateResponse.Content.ReadAsStringAsync()}");
-                            TempData["ErrorMessage"] = $"Failed to update next check date.";
+                            TempData["ErrorMessage"] = $"Failed to update next check date for 30 Day.";
                             return View("Error", new { message = $"Error: {updateResponse.StatusCode}, {updateResponse.ReasonPhrase}" });
                         }
                     }

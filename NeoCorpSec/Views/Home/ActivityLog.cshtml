@@ -5,33 +5,46 @@
 
 }
 
-
 <div class="text-center">
     <h1 class="display-4">Activity Log</h1>
 </div>
 
-<div class="activity-log-container">
-    @if (Model.Any())
+<!-- Nav tabs -->
+<ul class="nav nav-tabs">
+    <li class="nav-item">
+        <a class="nav-link active" data-bs-toggle="tab" href="#all">All Activity</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#create">Creations</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#add">Additions</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-bs-toggle="tab" href="#update">Updates</a>
+    </li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+    @foreach (var activityType in new[] { "All", "Create", "Add", "Update" })
     {
-        <ul class="list-group activity-log-list">
-            @foreach (var log in reverseOrderModel)
-            {
-                <li class="list-group-item activity-log-item">
-                    <span class="activity-log-name">@($"{log.FirstName} {log.LastName}")</span>
-                    <span class="activity-log-details">@($"{log.Action.ToUpper()}")</span>
-                    <span class="activity-log-split"> | </span>
-                    <span class="activity-log-time">@ConvertToEasternTime($"{log.ActionTime}")</span>
-                </li>
-            }
-        </ul>
-    }
-    else
-    {
-        <div class="alert alert-info activity-log-alert" role="alert">
-            There are no activity logs to display.
+        <div class="tab-pane @(activityType == "All" ? "active" : "")" id="@activityType.ToLower()">
+            <ul class="list-group activity-log-list">
+                @foreach (var log in reverseOrderModel.Where(l => activityType == "All" || l.ActivityType == activityType)) // O(n)
+                {
+                    <li class="list-group-item activity-log-item">
+                        <span class="activity-log-name">@($"{log.FirstName} {log.LastName}")</span>
+                        <span class="activity-log-details">@($"{log.Action.ToUpper()}")</span>
+                        <span class="activity-log-split"> | </span>
+                        <span class="activity-log-time">@ConvertToEasternTime($"{log.ActionTime}")</span>
+                    </li>
+                }
+            </ul>
         </div>
     }
 </div>
+
 
 @functions {
     public static string ConvertToEasternTime(string dateTimeString)
