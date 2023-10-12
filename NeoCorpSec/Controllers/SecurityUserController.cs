@@ -59,7 +59,15 @@ namespace NeoCorpSec.Controllers
                     var securityUserContent = await securityUserResponse.Content.ReadAsStringAsync();
                     securityUser = JsonSerializer.Deserialize<AdminCombinedSecurityUser>(securityUserContent, securityUserOptions);
                 }
+                else
+                {
+                    // Log the error or set a message to be displayed
+                    var errorMessage = $"Failed to load profile. Status Code: {securityUserResponse.StatusCode}, Reason: {securityUserResponse.ReasonPhrase}";
+                    _logger.LogError(errorMessage);  // Assuming _logger is your logging instance
+                    TempData["ErrorMessage"] = "Failed to load profile. Please try again later.";
+                }
             }
+
 
             ViewBag.SecurityUser = securityUser;
             PalantirMessage palantirMessage = new PalantirMessage();

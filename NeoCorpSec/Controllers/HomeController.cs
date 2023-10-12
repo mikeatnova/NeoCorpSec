@@ -17,6 +17,7 @@ using System.Data;
 using System.Net.Http.Headers;
 using Microsoft.CodeAnalysis;
 using Location = NeoCorpSec.Models.CameraManagement.Location;
+using NeoCorpSec.Models.Chat;
 
 namespace NeoCorpSec.Controllers
 {
@@ -55,10 +56,30 @@ namespace NeoCorpSec.Controllers
             return View(new List<T>());
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            List<ChatLog> chatLogs = new List<ChatLog>();
+            string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+
+            using (var httpClient = InitializeHttpClient())
+            {
+                var response = await httpClient.GetAsync($"{baseUrl}/api/ChatLog");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    chatLogs = JsonConvert.DeserializeObject<List<ChatLog>>(content);
+                }
+                else
+                {
+                    _logger.LogError($"Error fetching chat logs: {await response.Content.ReadAsStringAsync()}");
+                    TempData["ErrorMessage"] = $"Failed to fetch chat logs.";
+                }
+            }
+
+            return View(chatLogs);  // Pass the chatLogs list to the View
         }
+
 
         public IActionResult TourPage()
         {
@@ -227,7 +248,7 @@ namespace NeoCorpSec.Controllers
                             if (updateCameraResponse.IsSuccessStatusCode)
                             {
                                 // Prepare the Activity Log with the CurrentActivityLog from CoreController
-                                var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"added a note to Camera #{existingCamera.ID}, {existingCamera.Name}", "Add");
+                                var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"added a note to Camera #{existingCamera.ID}, {existingCamera.Name}.", "Add");
 
                                 // Log the prepared Activity Log
                                 var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
@@ -622,6 +643,60 @@ namespace NeoCorpSec.Controllers
                 return View("Error", new { message = $"An exception occurred: {ex.Message}" });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AddNewChatLog(ChatLog newChatLog)
+        {
+            try
+            {
+                // Initialize HTTP client and base URL
+                string baseUrl = _configuration.GetValue<string>("NeoNovaApiBaseUrl");
+                using (var httpClient = InitializeHttpClient())
+                {
+                    // Serialize the newChatLog object to JSON and prepare HTTP content
+                    var json = JsonConvert.SerializeObject(newChatLog);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    // Make the POST request
+                    var response = await httpClient.PostAsync($"{baseUrl}/api/ChatLog", content);
+
+                    // Handle response
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Prepare the Activity Log with the CurrentActivityLog from CoreController
+                        var preparedLog = _activityLogService.PrepareActivityLog(CurrentActivityLog, $"Updated the Chat Log.", "Update");
+
+                        // Log the prepared Activity Log
+                        var logContent = new StringContent(JsonConvert.SerializeObject(preparedLog), Encoding.UTF8, "application/json");
+                        var logResponse = await httpClient.PostAsync($"{baseUrl}/api/ActivityLog", logContent);
+                        if (logResponse.IsSuccessStatusCode)
+                        {
+                            TempData["SuccessMessage"] = $"ChatLog has been added successfully.";
+                            return RedirectToAction("Index");
+                        }
+                        else
+                        {
+                            var logErrorContent = await logResponse.Content.ReadAsStringAsync();
+                            TempData["ApiLogError"] = $"Activity Log Error: {logResponse.StatusCode}, {logResponse.ReasonPhrase}";
+                            return RedirectToAction("Index");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogError($"Error adding new chat log: {await response.Content.ReadAsStringAsync()}");
+                        TempData["ErrorMessage"] = $"Failed to add new chat log.";
+                        return View("Error", new { message = $"Error: {response.StatusCode}, {response.ReasonPhrase}" });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Exception occurred: {ex.Message}");
+                TempData["ErrorMessage"] = $"An exception occurred while adding new chat log.";
+                return View("Error", new { message = $"An exception occurred: {ex.Message}" });
+            }
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> ResetThirtyDay(int locationId)

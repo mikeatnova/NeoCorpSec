@@ -1,0 +1,13 @@
+﻿.chatlog-message{
+    font-weight: bold;
+}
+
+.chatlog {
+    margin-bottom: .5rem;
+    padding: .25rem;
+}
+
+    .chatlog:hover {
+        border: 1px solid #007466;
+        background-color: #004445;
+    }
