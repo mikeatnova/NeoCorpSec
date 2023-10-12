@@ -1,13 +1,48 @@
-﻿.chatlog-message{
-    font-weight: bold;
+﻿.chatlog {
+    margin-bottom: .5rem;
+    padding: .3rem;
+    position: relative;
+    transition: border 0.3s ease-in-out;
 }
 
-.chatlog {
-    margin-bottom: .5rem;
-    padding: .25rem;
-}
+    .chatlog:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, #004445, transparent);
+        opacity: 1;
+        transition: opacity 0.3s ease-in-out;
+        z-index: -1;
+    }
+
+    .chatlog:hover:before {
+        background: radial-gradient(circle at 50% 50%, #004445, transparent);
+        opacity: .2;
+    }
 
     .chatlog:hover {
         border: 1px solid #007466;
-        background-color: #004445;
     }
+
+.chatlog-message {
+    font-weight: bold;
+    transition: font-size 0.9s ease-in-out;
+}
+
+.chatlog:hover .chatlog-message {
+    font-size: 1.2rem;
+}
+
+.chatlog-date {
+    width: 100%;
+    color: #2b2a2a;
+    font-size: 1.5rem;
+    transition: color 0.9s ease-in-out;
+}
+
+.chatlog:hover .chatlog-date {
+    color: #b5b5b5;
+}

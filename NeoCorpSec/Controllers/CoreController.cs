@@ -23,6 +23,7 @@ namespace NeoCorpSec.Controllers
                 ViewBag.FirstName = claims.FindFirst("FirstName")?.Value;
                 ViewBag.LastName = claims.FindFirst("LastName")?.Value;
                 ViewBag.SecurityUsername = claims.FindFirst("SecurityUsername")?.Value;
+                ViewBag.SecurityUserID = claims.FindFirst("ID")?.Value;
 
                 // Populate ActivityLog fields
                 CurrentActivityLog.IdentityUserId = ViewBag.UserId;

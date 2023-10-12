@@ -7,8 +7,6 @@
 }
 
 <div class="container">
-    <h1 class="display-4 text-center">Main Log</h1>
-
     <div>
         @if (TempData["ApiError"] != null)
         {
@@ -37,13 +35,13 @@
     </div>
 
     <!-- Chat Display -->
-    <div id="chat-display" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+    <div id="chat-display" style="height: 600px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
         @foreach (var chat in Model)
         {
             <div class="chatlog">
-                <span>@chat.FirstName @(string.IsNullOrEmpty(chat.LastName) ? "" : chat.LastName[0] + ".") (@chat.Username):</span>
+                <span class="chatlog-name">@chat.FirstName @(string.IsNullOrEmpty(chat.LastName) ? "" : chat.LastName[0] + ".") (@chat.Username):</span>
                 <span class="chatlog-message">@chat.Message</span>
-                <p>[@chat.CreatedAt]</p>
+                <p class="chatlog-date">@ConvertToEasternTime(chat.CreatedAt.ToString("o"))</p>
             </div>
         }
     </div>
@@ -53,7 +51,7 @@
         <form method="post" asp-controller="Home" asp-action="AddNewChatLog">
             <!-- Hidden Fields -->
             <input type="hidden" name="ID" value="@ViewBag.ID" />
-            <input type="hidden" name="UserId" value="@ViewBag.UserId" />
+            <input type="hidden" name="UserId" value="@ViewBag.SecurityUserID" />
             <input type="hidden" name="FirstName" value="@ViewBag.FirstName" />
             <input type="hidden" name="LastName" value="@ViewBag.LastName" />
             <input type="hidden" name="Username" value="@ViewBag.Username" />
@@ -67,6 +65,20 @@
         </form>
     </div>
 </div>
+
+@functions {
+    public static string ConvertToEasternTime(string dateTimeString)
+    {
+        DateTime utcDateTime;
+        if (DateTime.TryParse(dateTimeString, out utcDateTime))
+        {
+            TimeZoneInfo easternZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+            DateTime easternTime = TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, easternZone);
+            return easternTime.ToString("MM.dd.yyyy hh:mm:ss tt"); // Now in AM/PM format
+        }
+        return dateTimeString;
+    }
+}
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
