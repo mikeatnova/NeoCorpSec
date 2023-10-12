@@ -157,15 +157,16 @@
     display: none;
 }
 
+/* Make the textarea invalid when empty */
+textarea:invalid {
+    border: 1px solid red;
+}
+
 /* Show the submit button when textarea is valid */
 #noteInput:valid ~ #submitButton {
     display: block;
 }
 
-/* Make the textarea invalid when empty */
-textarea:invalid {
-    border: 1px solid red;
-}
 
 .past-cameras-details {
     padding: 5px;

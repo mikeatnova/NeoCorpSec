@@ -1,8 +1,76 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using NeoCorpSec.Models.Chat;
+
+@model List<ChatLog>
+
+@{
+    ViewData["Title"] = "Main Log";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <h1 class="display-4 text-center">Main Log</h1>
+
+    <div>
+        @if (TempData["ApiError"] != null)
+        {
+            <div class="alert alert-danger text-center text-dark">
+                @TempData["ApiError"]
+            </div>
+        }
+        @if (TempData["ApiMessage"] != null)
+        {
+            <div class="alert alert-success text-center text-dark">
+                @TempData["ApiMessage"]
+            </div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success text-center text-dark">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["FailureMessage"] != null)
+        {
+            <div class="alert alert-danger text-center text-dark">
+                @TempData["FailureMessage"]
+            </div>
+        }
+    </div>
+
+    <!-- Chat Display -->
+    <div id="chat-display" style="height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+        @foreach (var chat in Model)
+        {
+            <div class="chatlog">
+                <span>@chat.FirstName @(string.IsNullOrEmpty(chat.LastName) ? "" : chat.LastName[0] + ".") (@chat.Username):</span>
+                <span class="chatlog-message">@chat.Message</span>
+                <p>[@chat.CreatedAt]</p>
+            </div>
+        }
+    </div>
+
+    <!-- Chat Entry -->
+    <div id="chat-entry" style="margin-top: 20px;">
+        <form method="post" asp-controller="Home" asp-action="AddNewChatLog">
+            <!-- Hidden Fields -->
+            <input type="hidden" name="ID" value="@ViewBag.ID" />
+            <input type="hidden" name="UserId" value="@ViewBag.UserId" />
+            <input type="hidden" name="FirstName" value="@ViewBag.FirstName" />
+            <input type="hidden" name="LastName" value="@ViewBag.LastName" />
+            <input type="hidden" name="Username" value="@ViewBag.Username" />
+            <input type="hidden" name="SecurityUsername" value="@ViewBag.SecurityUsername" />
+
+            <!-- Message Input -->
+            <div class="form-group">
+                <textarea class="form-control custom-textarea" id="chatLogInput" name="Message" rows="3" required maxlength="1200"></textarea>
+            </div>
+            <button id="submitLogButton" type="submit" class="btn w-100 action-button">Submit</button>
+        </form>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var chatDisplay = document.getElementById("chat-display");
+        chatDisplay.scrollTop = chatDisplay.scrollHeight;
+    });
+</script>
